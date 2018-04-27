@@ -1,0 +1,30 @@
+Pierwsza linia figury to rodzaj 'trybu wczytywania' oraz czy figura sie wlicza czy odejmuje od calego modelu.
+R - tryb rzutow, N - tryb punkt za punktem, 1 - wlicza, 0 - odjemuje np:
+R1 
+R0 
+N1 
+N0
+Nastepne podajemy punkty definiujeace figury, 
+dla trybu R kolejne rzuty scian sa odseparowane znakiem "&", 
+kazda figura musi sie konczyc znakiem "#"
+znaki 'whitespace' nie sa brane pod uwage
+liczby ulamkowe podawane sa z separatorem "."
+kolejne wspolrzedne punktu sa oddzielone "," 
+kolejne punkty sa odzielone ";"
+Przykladowy plik z dwoma figurami (takimi samymi szescianami)
+
+R1
+0,0; 0,1; 1,1; 1,0; &
+0.0, 0.0; 0.0, 1.0; 1.0, 1.0; 1.0, 0.0; &
+0,0; 0,1; 1,1; 1,0;
+#
+N0
+0, 0, 0; 
+0, 0, 1;
+1, 0, 1;
+1, 0, 0;
+0, 1, 0; 
+0, 1, 1;
+1, 1, 1;
+1, 1, 0;
+#
