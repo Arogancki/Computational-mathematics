@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "OBJLoader.h"
+#include "FileParser.h"
+
+#define debug true
 
 #pragma region Zmienne globalne
 // Player
@@ -79,7 +82,7 @@ GLuint LoadTexture(char * file, int magFilter, int minFilter) {
 void Init() {
 	// TODO: Dodawanie modeli tutaj
 	// Init modeli
-	AK47 = new OBJLoader("AK47");
+	//AK47 = new OBJLoader("AK47");
 
 	// Inicjalizacja punktu docelowego.
 	End_Field = vec3(1, 0, 1);
@@ -104,8 +107,31 @@ float GetRandomFloat() {
 	return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 }
 
+ParsedData *shapeConfig;
 int main(int argc, char* argv[])
 {
+	try {
+	// load file
+	string filePath;
+	cout << "Please enter path to file with shape specification:\n";
+	if (!debug)
+		cin >> filePath;
+	else
+		filePath = "./testFile.txt";
+
+	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
+	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
+
+	if (debug) {
+		int i = 0;
+		for (Shape shape : shapeConfig->shapes) {
+			cout << "\nShape: " << ++i << " = " << shape.getPoints().size() - 1 << " lines.\nPoints:" << "\n";
+			int j = 0;
+			for (Point3D point3D : shape.getPoints())
+				cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
+		}
+	}
+
 	glutInit(&argc, argv);
 
 	glutInitWindowPosition(100, 100);
@@ -113,7 +139,7 @@ int main(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
 	//TODO zmieniæ nazwê gry!
-	glutCreateWindow("Gra");
+	glutCreateWindow("Calkowanie figur?? xDxD");
 
 	glutDisplayFunc(OnRender);
 	glutReshapeFunc(OnReshape);
@@ -159,6 +185,13 @@ int main(int argc, char* argv[])
 	delete AK47;
 
 	return 0;
+	}
+	catch (const std::exception exceptional_result) {
+		std::cout << exceptional_result.what() << '\n';
+		string x;
+		cin >> x;
+		return -1;
+	}
 }
 
 #pragma region Obsluga wejscia
@@ -433,6 +466,33 @@ void DrawMonster(Monster m) {
 
 }
 
+void DrawLine(Point3D p1, Point3D p2) {
+	glLineWidth(2.0);
+	float m_amb[] = { 0.0f, .0f, 1.0f, 1.0f };
+	float m_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
+	glBegin(GL_LINES);
+	glVertex3f(p1.getX(), p1.getY(), p1.getZ());
+	glVertex3f(p2.getX(), p2.getY(), p2.getZ());
+	glEnd();
+}
+
+void DrawShape(Shape shape) {
+	// zakladamy ze kazdy shape ma conajmniej dlugosc == 3
+	std::vector<Point3D> points = shape.getPoints();
+	for (int i = 0; i < points.size() - 1; i++) {
+		DrawLine(points[i], points[i + 1]);
+	}
+}
+
+void DrawShapes(std::vector<Shape> shapes) {
+	for (Shape shape : shapes)
+		DrawShape(shape);
+}
+
 void OnRender() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -445,11 +505,9 @@ void OnRender() {
 		0.0f, 1.0f, 0.0f
 	);
 
-	
-	
 	#pragma region Swiatlo
 	
-		float l0_amb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		float l0_amb[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 		float l0_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float l0_spe[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float l0_pos[] = { 0.0f, 10.0f, 0.0f, 1.0f };
@@ -608,30 +666,8 @@ void OnRender() {
 	#pragma endregion
 	*/
 
-	// Rysowanie linii, mo¿e rysowaæ ca³¹ figure z linii anie jako obiekt bo i 
-	//   tak bêdziemy musieli jakiegoœ wireframe zrobic, aby by³o strza³y widaæ
-	glLineWidth(1.5);
-	float m_amb[] = { 1.0f, .0f, 0.0f, 1.0f };
-	float m_dif[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-	float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-	glColor3f(1.0, 0, 0);
-	glBegin(GL_LINES);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 1);
-	float m_amb2[] = { .0f, 1.0f, 0.0f, 1.0f };
-	float m_dif2[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-	float m_spe2[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb2);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif2);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe2);
-	glColor3f(.0, 1.0, 0);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 1);
-	glEnd();
-
+	//Rysowanie figury
+	DrawShapes(shapeConfig->shapes);
 
 	DrawGUI();
 

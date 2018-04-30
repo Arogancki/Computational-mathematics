@@ -8,6 +8,7 @@ public:
 	Point2D(double, double);
 	double getX();
 	double getY();
+	static bool areEqual(Point2D, Point2D);
 };
 
 class Point3D : public Point2D{
@@ -16,6 +17,7 @@ private:
 public:
 	Point3D(double, double, double);
 	double getZ();
+	static bool areEqual(Point3D, Point3D);
 };
 
 class Shape{
@@ -40,8 +42,9 @@ private:
 	std::vector<Point2D> side1;
 	std::vector<Point2D> side2;
 	std::vector<Point3D> points;
+	std::vector<std::vector<Point3D>> lines;
+	bool doesLineExist(Point3D, Point3D);
 	void addTo(double, double, std::vector<Point2D>&);
-	bool areEqual(double, double);
 	bool contains(std::vector<Point2D>&, double, double);
 public:
 	ShapeBuilder();
