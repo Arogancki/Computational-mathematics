@@ -3,11 +3,12 @@
 #include <vector>
 #include "Shape.h"
 
-class ParseMetaData{
+class ParsedData {
 public:
 	char type;
-	bool includes;
-	std::string content;
+	int value;
+	std::vector<Shape> shapes;
+	ParsedData(char, int, std::vector<Shape>);
 };
 
 class FileParser {
@@ -18,5 +19,5 @@ private:
 	static char readChar(std::ifstream&);
 	static Shape readShape(std::ifstream&);
 public:
-	static std::vector<Shape> parse(std::string);
+	static ParsedData parse(std::string);
 };

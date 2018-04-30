@@ -445,6 +445,8 @@ void OnRender() {
 		0.0f, 1.0f, 0.0f
 	);
 
+	
+	
 	#pragma region Swiatlo
 	
 		float l0_amb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
@@ -458,6 +460,7 @@ void OnRender() {
 
 	#pragma endregion
 
+	/*
 	#pragma region Rysowanie scian
 
 		glBegin(GL_QUADS);
@@ -603,14 +606,30 @@ void OnRender() {
 		glEnd();
 
 	#pragma endregion
-	
-		// Rysowanie linii, mo¿e rysowaæ ca³¹ figure z linii anie jako obiekt bo i 
-		//   tak bêdziemy musieli jakiegoœ wireframe zrobic, aby by³o strza³y widaæ
+	*/
+
+	// Rysowanie linii, mo¿e rysowaæ ca³¹ figure z linii anie jako obiekt bo i 
+	//   tak bêdziemy musieli jakiegoœ wireframe zrobic, aby by³o strza³y widaæ
 	glLineWidth(1.5);
-	glColor3f(1.0, 1.0, 1.0);
+	float m_amb[] = { 1.0f, .0f, 0.0f, 1.0f };
+	float m_dif[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
+	glColor3f(1.0, 0, 0);
 	glBegin(GL_LINES);
-	glVertex3f(0.0, 2.0, 0.0);
-	glVertex3f(0, 2, 7);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, 1);
+	float m_amb2[] = { .0f, 1.0f, 0.0f, 1.0f };
+	float m_dif2[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	float m_spe2[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb2);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif2);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe2);
+	glColor3f(.0, 1.0, 0);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, 1);
 	glEnd();
 
 

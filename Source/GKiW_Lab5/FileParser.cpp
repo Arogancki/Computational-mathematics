@@ -138,7 +138,7 @@ Shape FileParser::readShape(std::ifstream& _file)
 	}
 }
 
-std::vector<Shape> FileParser::parse(std::string filePath)
+ParsedData FileParser::parse(std::string filePath)
 {
 	char singleCharacter;
 	std::ifstream file(filePath);
@@ -146,11 +146,27 @@ std::vector<Shape> FileParser::parse(std::string filePath)
 		throw std::runtime_error("Nie mozna otworzyc pliku!");
 	}
 	std::vector<Shape> shapes = std::vector<Shape>();
+
+	singleCharacter = readChar(file);
+	// the first has to be the R or M
+	if (singleCharacter != 'R' && singleCharacter != 'M') {
+		throw std::runtime_error("File must starts with R (rectangles) or M (monte carlo)!");
+	}
+	char type = singleCharacter;
+
+	int value = (int)readNumber(file);
 	do {
 		shapes.push_back(readShape(file));
 		singleCharacter = readChar(file);
 		file.seekg(-1L, std::ifstream::cur);
 	} while (singleCharacter != EOF);
 	file.close();
-	return shapes;
+	return ParsedData(type, value, shapes);
+}
+
+ParsedData::ParsedData(char _type, int _value, std::vector<Shape> _shapes)
+{
+	type = _type;
+	value = _value;
+	shapes = _shapes;
 }

@@ -85,6 +85,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\parser jako osobny projekt\ConsoleApplication3\FileParser.h" />
+    <ClInclude Include="..\..\parser jako osobny projekt\ConsoleApplication3\Shape.h" />
     <ClInclude Include="..\3rd_party\bitmap\Bitmap.h" />
     <ClInclude Include="GKiW_Lab5.h" />
     <ClInclude Include="OBJLoader.h" />
@@ -92,6 +94,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\parser jako osobny projekt\ConsoleApplication3\FileParser.cpp" />
+    <ClCompile Include="..\..\parser jako osobny projekt\ConsoleApplication3\Shape.cpp" />
     <ClCompile Include="..\3rd_party\bitmap\Bitmap.cpp" />
     <ClCompile Include="GKiW_Lab5.cpp" />
     <ClCompile Include="OBJLoader.cpp" />
