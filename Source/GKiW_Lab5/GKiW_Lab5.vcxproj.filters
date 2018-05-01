@@ -33,7 +33,7 @@
     <ClInclude Include="..\..\parser jako osobny projekt\ConsoleApplication3\FileParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\parser jako osobny projekt\ConsoleApplication3\Shape.h">
+    <ClInclude Include="Shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -393,7 +393,6 @@ void BulletFireLogic(int id) {
 	
 	if (shooting) {
 		glutTimerFunc(500, BulletFireLogic, 0);
-	
 		if (Player_Ammo_Amount > 0) {
 			bullets.push_back(Bullet(player.pos,player.dir));
 			Player_Ammo_Amount--;
@@ -466,9 +465,9 @@ void DrawMonster(Monster m) {
 
 }
 
-void DrawLine(Point3D p1, Point3D p2) {
+void DrawLine(Point3D p1, Point3D p2, double r, double g, double b) {
 	glLineWidth(2.0);
-	float m_amb[] = { 0.0f, .0f, 1.0f, 1.0f };
+	float m_amb[] = { r, g, b, 1.0f };
 	float m_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
@@ -480,17 +479,17 @@ void DrawLine(Point3D p1, Point3D p2) {
 	glEnd();
 }
 
-void DrawShape(Shape shape) {
+void DrawShape(Shape shape, double r, double g, double b) {
 	// zakladamy ze kazdy shape ma conajmniej dlugosc == 3
 	std::vector<Point3D> points = shape.getPoints();
 	for (int i = 0; i < points.size() - 1; i++) {
-		DrawLine(points[i], points[i + 1]);
+		DrawLine(points[i], points[i + 1], r, g, b);
 	}
 }
 
-void DrawShapes(std::vector<Shape> shapes) {
+void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
 	for (Shape shape : shapes)
-		DrawShape(shape);
+		DrawShape(shape, r, g, b);
 }
 
 void OnRender() {
@@ -667,7 +666,8 @@ void OnRender() {
 	*/
 
 	//Rysowanie figury
-	DrawShapes(shapeConfig->shapes);
+	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
+	DrawShapes(shapeConfig->shapes.get, 0.0, 0.0, 1.0);
 
 	DrawGUI();
 

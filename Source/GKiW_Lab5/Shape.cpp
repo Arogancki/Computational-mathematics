@@ -3,10 +3,189 @@
 
 #define safe false
 #define epsilon 0.01
+#define ABS(x) ((x)<0?-(x):(x))
+
+#define max_x 10
+#define max_y 10
+#define max_z 10
 
 bool funAreEqual(double _x, double _y)
 {
-	return fabs(_x - _y) < epsilon;
+	return ABS(_x - _y) < epsilon;
+}
+
+Point2D funGetMinY2(std::vector<Point2D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double min = _v[0].getY();
+	int minIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getY();
+		if (current < min) {
+			minIndex = i;
+			min = current;
+		}
+	}
+	return _v[minIndex];
+}
+
+Point2D funGetMinX2(std::vector<Point2D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double min = _v[0].getX();
+	int minIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getX();
+		if (current < min) {
+			minIndex = i;
+			min = current;
+		}
+	}
+	return _v[minIndex];
+}
+
+Point3D funGetMinY3(std::vector<Point3D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double min = _v[0].getY();
+	int minIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getY();
+		if (current < min) {
+			minIndex = i;
+			min = current;
+		}
+	}
+	return _v[minIndex];
+}
+
+Point3D funGetMinX3(std::vector<Point3D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double min = _v[0].getX();
+	int minIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getX();
+		if (current < min) {
+			minIndex = i;
+			min = current;
+		}
+	}
+	return _v[minIndex];
+}
+
+Point3D funGetMinZ3(std::vector<Point3D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double min = _v[0].getZ();
+	int minIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getZ();
+		if (current < min) {
+			minIndex = i;
+			min = current;
+		}
+	}
+	return _v[minIndex];
+}
+
+Point2D funGetMaxY2(std::vector<Point2D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double max = _v[0].getY();
+	int maxIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getY();
+		if (current > max) {
+			maxIndex = i;
+			max = current;
+		}
+	}
+	return _v[maxIndex];
+}
+
+Point2D funGetMaxX2(std::vector<Point2D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double max = _v[0].getX();
+	int maxIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getX();
+		if (current > max) {
+			maxIndex = i;
+			max = current;
+		}
+	}
+	return _v[maxIndex];
+}
+
+Point3D funGetMaxY3(std::vector<Point3D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double max = _v[0].getY();
+	int maxIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getY();
+		if (current > max) {
+			maxIndex = i;
+			max = current;
+		}
+	}
+	return _v[maxIndex];
+}
+
+Point3D funGetMaxX3(std::vector<Point3D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double max = _v[0].getX();
+	int maxIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getX();
+		if (current > max) {
+			maxIndex = i;
+			max = current;
+		}
+	}
+	return _v[maxIndex];
+}
+
+Point3D funGetMaxZ3(std::vector<Point3D>& _v)
+{
+	if (_v.size() == 0)
+		throw "Empty vector!";
+	double max = _v[0].getZ();
+	int maxIndex = 0;
+	double current;
+	for (int i = 1; i < _v.size(); i++) {
+		current = _v[i].getZ();
+		if (current > max) {
+			maxIndex = i;
+			max = current;
+		}
+	}
+	return _v[maxIndex];
+}
+
+double funNormalize(double val, double min, double max) {
+	return (val - min) / (max - min);
 }
 
 //Point2d
@@ -90,6 +269,99 @@ std::vector<Point3D> Shape::getPoints()
 	return this->points;
 }
 
+Shape Shape::getCubeAround()
+{
+	double minX = funGetMinX3(this->getPoints()).x;
+	double minY = funGetMinY3(this->getPoints()).y;
+	double minZ = funGetMinZ3(this->getPoints()).z;
+	
+	double maxX = funGetMaxX3(this->getPoints()).x;
+	double maxY = funGetMaxY3(this->getPoints()).y;
+	double maxZ = funGetMaxZ3(this->getPoints()).z;
+
+	ShapeBuilder shapeBuilder = ShapeBuilder();
+	shapeBuilder.add(minX, minY, minZ);
+	shapeBuilder.add(maxX, minY, minZ);
+	shapeBuilder.add(maxX, minY, maxZ);
+	shapeBuilder.add(minX, minY, maxZ);
+	shapeBuilder.add(minX, minY, minZ);
+
+	shapeBuilder.add(minX, maxY, minZ);
+	shapeBuilder.add(minX, minY, minZ);
+	shapeBuilder.add(minX, maxY, minZ);
+
+	shapeBuilder.add(maxX, maxY, minZ);
+	shapeBuilder.add(maxX, minY, minZ);
+	shapeBuilder.add(maxX, maxY, minZ);
+	
+	shapeBuilder.add(maxX, maxY, maxZ);
+	shapeBuilder.add(maxX, minY, maxZ);
+	shapeBuilder.add(maxX, maxY, maxZ);
+
+	shapeBuilder.add(minX, maxY, maxZ);
+	shapeBuilder.add(minX, minY, maxZ);
+	shapeBuilder.add(minX, maxY, maxZ);
+
+	shapeBuilder.add(minX, maxY, minZ);
+	
+	return shapeBuilder.getShape(true);
+}
+
+void ShapeBuilder::normalize(std::vector<Point2D>& _v)
+{
+	Point2D minX = funGetMinX2(_v);
+	Point2D minY = funGetMinY2(_v);
+	for (Point2D p : _v){
+		p.x += minX.x;
+		p.y += minY.y;
+	}
+	minX = funGetMinX2(_v);
+	minY = funGetMinY2(_v);
+	Point2D maxX = funGetMaxX2(_v);
+	Point2D maxY = funGetMaxY2(_v);
+
+	double d_minX = minX.x < 0 ? 0 : minX.x;
+	double d_minY = minY.y < 0 ? 0 : minY.y;
+	double d_maxX = maxX.x > max_x ? max_x : maxX.x;
+	double d_maxY = maxY.y > max_y ? max_y : maxY.y;
+
+	for (Point2D p : _v) {
+		p.x = funNormalize(p.x, d_minX, d_maxX);
+		p.y = funNormalize(p.y, d_minY, d_maxY);
+	}
+}
+
+void ShapeBuilder::normalize(std::vector<Point3D>& _v)
+{
+	Point3D minX = funGetMinX3(_v);
+	Point3D minY = funGetMinY3(_v);
+	Point3D minZ = funGetMinZ3(_v);
+	for (Point3D p : _v) {
+		p.x += minX.x;
+		p.y += minY.y;
+		p.z += minZ.z;
+	}
+	minX = funGetMinX3(_v);
+	minY = funGetMinY3(_v);
+	minZ = funGetMinZ3(_v);
+	Point3D maxX = funGetMaxX3(_v);
+	Point3D maxY = funGetMaxY3(_v);
+	Point3D maxZ = funGetMaxZ3(_v);
+
+	double d_minX = minX.x < 0 ? 0 : minX.x;
+	double d_minY = minY.y < 0 ? 0 : minY.y;
+	double d_minZ = minZ.z < 0 ? 0 : minZ.z;
+	double d_maxX = maxX.x > max_x ? max_x : maxX.x;
+	double d_maxY = maxY.y > max_y ? max_y : maxY.y;
+	double d_maxZ = maxZ.z > max_z ? max_z : maxZ.z;
+
+	for (Point3D p : _v) {
+		p.x = funNormalize(p.x, d_minX, d_maxX);
+		p.y = funNormalize(p.y, d_minY, d_maxY);
+		p.z = funNormalize(p.z, d_minZ, d_maxZ);
+	}
+}
+
 //Shape end
 
 //ShapeBuilder
@@ -103,6 +375,10 @@ Shape ShapeBuilder::getShape(bool _includes)
 	if (safe)
 		if (this->base.size() < 3 || this->side1.size() < 3 || this->side2.size() < 3)
 			throw std::runtime_error("Every side of a shape has to have at least 3 coordinates!");
+	normalize(this->base);
+	normalize(this->side1);
+	normalize(this->side2);
+	normalize(this->points);
 	return Shape(_includes, this->base, this->side1, this->side2, this->points);
 }
 
@@ -155,6 +431,96 @@ bool ShapeBuilder::contains(std::vector<Point2D>& _v, double _x, double _y)
 			return true;
 	}
 	return false;
+}
+
+Point2D ShapeBuilder::getMinXBase()
+{
+	return funGetMinX2(this->base);
+}
+
+Point2D ShapeBuilder::getMinXSide1()
+{
+	return funGetMinX2(this->side1);
+}
+
+Point2D ShapeBuilder::getMinXSide2()
+{
+	return funGetMinX2(this->side2);
+}
+
+Point2D ShapeBuilder::getMinYBase()
+{
+	return funGetMinY2(this->base);
+}
+
+Point2D ShapeBuilder::getMinYSide1()
+{
+	return funGetMinY2(this->side1);
+}
+
+Point2D ShapeBuilder::getMinYSide2()
+{
+	return funGetMinY2(this->side2);
+}
+
+Point3D ShapeBuilder::getMinY()
+{
+	return funGetMinY3(this->points);
+}
+
+Point3D ShapeBuilder::getMinX()
+{
+	return funGetMinX3(this->points);
+}
+
+Point3D ShapeBuilder::getMinZ()
+{
+	return funGetMinZ3(this->points);
+}
+
+Point2D ShapeBuilder::getMaxXBase()
+{
+	return funGetMaxX2(this->base);
+}
+
+Point2D ShapeBuilder::getMaxXSide1()
+{
+	return funGetMaxX2(this->side1);
+}
+
+Point2D ShapeBuilder::getMaxXSide2()
+{
+	return funGetMaxX2(this->side2);
+}
+
+Point2D ShapeBuilder::getMaxYBase()
+{
+	return funGetMaxY2(this->base);
+}
+
+Point2D ShapeBuilder::getMaxYSide1()
+{
+	return funGetMaxY2(this->side1);
+}
+
+Point2D ShapeBuilder::getMaxYSide2()
+{
+	return funGetMaxY2(this->side2);
+}
+
+Point3D ShapeBuilder::getMaxY()
+{
+	return funGetMaxY3(this->points);
+}
+
+Point3D ShapeBuilder::getMaxX()
+{
+	return funGetMaxX3(this->points);
+}
+
+Point3D ShapeBuilder::getMaxZ()
+{
+	return funGetMaxZ3(this->points);
 }
 
 void ShapeBuilder::addToBase(double _x, double _y)
