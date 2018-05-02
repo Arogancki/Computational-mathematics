@@ -85,8 +85,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\parser jako osobny projekt\ConsoleApplication3\FileParser.h" />
     <ClInclude Include="..\3rd_party\bitmap\Bitmap.h" />
+    <ClInclude Include="FileParser.h" />
     <ClInclude Include="GKiW_Lab5.h" />
     <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="Shape.h" />
