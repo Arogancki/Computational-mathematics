@@ -12,9 +12,6 @@ void OnKeyUp(unsigned char, int, int);
 void OnMouseMove(int, int);
 void MouseButton(int button, int state, int x, int y);
 void OnTimer(int);
-void MonsterSpawner(int);
-void TimePassed(int);
-void BulletFireLogic(int);
 
 struct vec3 {
 	float x, y, z;
@@ -46,34 +43,4 @@ struct SCameraState {
 	vec3 dir;
 	float speed;
 	float velRX, velRY, velM, velS;
-};
-
-struct Monster {
-	vec3 pos;
-	vec3 dir;
-	int hitpoints = 20;
-	int time_waited = 0;
-	float speed = 0.04f;
-	bool attack = false;
-
-	float height = 2.0f;
-
-	Monster(vec3 pos, vec3 dir)
-		:pos(pos), dir(dir)
-	{}
-};
-
-struct Bullet {
-	vec3 pos;
-	vec3 dir;
-	int Distance_To_Travel = 1000;
-	int damage = 20;
-	// lepiej nie modyfikowaæ prêdkoœci pocisków
-	// wiêcej == szybciej == bêdzie omijaæ potwory
-	// mniej == wolniej == potwory bêd¹ omijaæ pocisk
-	float speed = 0.4f;
-
-	Bullet(vec3 pos, vec3 dir)
-		: pos(pos), dir(dir)
-	{}
 };

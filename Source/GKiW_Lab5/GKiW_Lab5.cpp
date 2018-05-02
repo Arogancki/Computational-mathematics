@@ -5,79 +5,18 @@
 #define debug true
 
 #pragma region Zmienne globalne
-// Player
-int Player_Ammo_Amount = 30;
-int Monsters_Killed = 0;
 SCameraState player;
-vector<Bullet> bullets;
-bool shooting = false;
 
 // Game
-int Time_Passed = 0;
-int Monster_Spawn_Rate = 500; // less == faster 
-bool Game_Started = false;
-bool Game_Over = false; 
-bool fog = true;
-bool Random_Fog_Color = true;
 bool captureMouse = true;
 bool free3DMovement = true;
-vector<Monster> Monsters;
-vector<vec3> Monster_Spawn_Points;
-vec3 End_Field;
-int Half_Square = 15; // Size of the square to spawn monster, center at vec3(0,0,0)
 
 int mouseX = 0;
 int mouseY = 0;
 
 float mouseSensitivity = .15f;
 
-//TODO dodawnie zmiennych modelu tutaj
-// Wczytane modele
-OBJLoader *AK47;
-
-//TODO ewentualne tekstury tutaj
-// Zmienne przechowuj¹ce identyfikatory tekstur
-GLuint Temp;
-
 #pragma endregion
-
-// Funkcja odczytuj¹ca bitmapê i tworz¹ca na jej podstawie teksturê z zadanym rodzajem filtracji
-GLuint LoadTexture(char * file, int magFilter, int minFilter) {
-	
-	// Odczytanie bitmapy
-	Bitmap *tex = new Bitmap();
-	if (!tex->loadBMP(file)) {
-		printf("ERROR: Cannot read texture file \"%s\".\n", file);
-		return -1;
-	}
-
-	// Utworzenie nowego id wolnej tekstury
-	GLuint texId;
-	glGenTextures(1, &texId);
-
-	// "Bindowanie" tekstury o nowoutworzonym id
-	glBindTexture(GL_TEXTURE_2D, texId);
-
-	// Okreœlenie parametrów filtracji dla tekstury
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // Filtracja, gdy tekstura jest powiêkszana
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter); // Filtracja, gdy tekstura jest pomniejszana
-
-	// Wys³anie tekstury do pamiêci karty graficznej zale¿nie od tego, czy chcemy korzystaæ z mipmap czy nie
-	if (minFilter == GL_LINEAR_MIPMAP_LINEAR || minFilter == GL_LINEAR_MIPMAP_NEAREST) {
-		// Automatyczne zbudowanie mipmap i wys³anie tekstury do pamiêci karty graficznej
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, tex->width, tex->height, GL_RGB, GL_UNSIGNED_BYTE, tex->data);
-	}
-	else {
-		// Wys³anie tekstury do pamiêci karty graficznej 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex->data);
-	}
-	
-	// Zwolnienie pamiêci, usuniêcie bitmapy z pamiêci - bitmapa jest ju¿ w pamiêci karty graficznej
-	delete tex;
-	
-	// Zwrócenie id tekstury
-	return texId;
-}
 
 void drawText(float x, float y, std::string st);
 void BetterDraw(float x, float y, std::string message, color color);
@@ -189,7 +128,6 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	
 	if (key == 13) { // 13 == Enter
 		// Start Gry
-		//Game_Started = true;
 		glutMouseFunc(MouseButton);
 
 		// Console that allows to write etc. 
@@ -339,13 +277,6 @@ void OnTimer(int id) {
 
 }
 
-void TimePassed(int id) {
-
-	Time_Passed++;
-	glutTimerFunc(1000, TimePassed, 0);
-
-}
-
 void DrawGUI() 
 {
 	std::stringstream s;
@@ -374,33 +305,6 @@ void DrawGUI()
 		BetterDraw(-60, -60, s.str(), WHITE);
 	}
 #pragma endregion
-}
-
-void DrawMonster(Monster m) {
-	
-	srand(time(NULL));
-	// Ustawienie materia³u
-	float r = GetRandomFloat();
-	float g = GetRandomFloat();
-	float b = GetRandomFloat();
-	float m_amb[] = { 0, 0, 0, 1.0f};
-	float m_dif[] = { r, g, b, 1.0f};
-	float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-
-	glPushMatrix();
-		glTranslatef(m.pos.x, m.pos.y + 1, m.pos.z);
-		float angle = atan2(m.pos.x - End_Field.x, m.pos.z - End_Field.z);
-		glRotatef(angle*(180 / 3.14), 0.0f, 1.0f, 0.0f);
-		// TODO: tutaj mo¿na wyœwitliæ model jak w przypadku broni.
-		// AK47->render();
-		glScalef(1.0f, m.height, 1.0f);
-		glutSolidCube(1);
-		///////////////////////////////////////////////////////////
-	glPopMatrix();
-
 }
 
 void DrawLine(Point3D p1, Point3D p2, double r, double g, double b) {
