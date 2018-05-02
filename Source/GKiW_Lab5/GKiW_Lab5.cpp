@@ -5,99 +5,19 @@
 #define debug true
 
 #pragma region Zmienne globalne
-// Player
-int Player_Ammo_Amount = 30;
-int Monsters_Killed = 0;
 SCameraState player;
-vector<Bullet> bullets;
-bool shooting = false;
+std::vector<Point3D> points;
 
 // Game
-int Time_Passed = 0;
-int Monster_Spawn_Rate = 500; // less == faster 
-bool Game_Started = false;
-bool Game_Over = false; 
-bool fog = true;
-bool Random_Fog_Color = true;
 bool captureMouse = true;
-bool free3DMovement = false;
-vector<Monster> Monsters;
-vector<vec3> Monster_Spawn_Points;
-vec3 End_Field;
-int Half_Square = 15; // Size of the square to spawn monster, center at vec3(0,0,0)
+bool free3DMovement = true;
 
 int mouseX = 0;
 int mouseY = 0;
 
 float mouseSensitivity = .15f;
 
-//TODO dodawnie zmiennych modelu tutaj
-// Wczytane modele
-OBJLoader *AK47;
-
-//TODO ewentualne tekstury tutaj
-// Zmienne przechowuj¹ce identyfikatory tekstur
-GLuint Temp;
-
 #pragma endregion
-
-// Funkcja odczytuj¹ca bitmapê i tworz¹ca na jej podstawie teksturê z zadanym rodzajem filtracji
-GLuint LoadTexture(char * file, int magFilter, int minFilter) {
-	
-	// Odczytanie bitmapy
-	Bitmap *tex = new Bitmap();
-	if (!tex->loadBMP(file)) {
-		printf("ERROR: Cannot read texture file \"%s\".\n", file);
-		return -1;
-	}
-
-	// Utworzenie nowego id wolnej tekstury
-	GLuint texId;
-	glGenTextures(1, &texId);
-
-	// "Bindowanie" tekstury o nowoutworzonym id
-	glBindTexture(GL_TEXTURE_2D, texId);
-
-	// Okreœlenie parametrów filtracji dla tekstury
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // Filtracja, gdy tekstura jest powiêkszana
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter); // Filtracja, gdy tekstura jest pomniejszana
-
-	// Wys³anie tekstury do pamiêci karty graficznej zale¿nie od tego, czy chcemy korzystaæ z mipmap czy nie
-	if (minFilter == GL_LINEAR_MIPMAP_LINEAR || minFilter == GL_LINEAR_MIPMAP_NEAREST) {
-		// Automatyczne zbudowanie mipmap i wys³anie tekstury do pamiêci karty graficznej
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, tex->width, tex->height, GL_RGB, GL_UNSIGNED_BYTE, tex->data);
-	}
-	else {
-		// Wys³anie tekstury do pamiêci karty graficznej 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex->data);
-	}
-	
-	// Zwolnienie pamiêci, usuniêcie bitmapy z pamiêci - bitmapa jest ju¿ w pamiêci karty graficznej
-	delete tex;
-	
-	// Zwrócenie id tekstury
-	return texId;
-}
-
-void Init() {
-	// TODO: Dodawanie modeli tutaj
-	// Init modeli
-	//AK47 = new OBJLoader("AK47");
-
-	// Inicjalizacja punktu docelowego.
-	End_Field = vec3(1, 0, 1);
-
-	// Genertowanie punktów startowych potworów 
-
-	// Tworzymy vektor przechowuj¹cy wszytkie mo¿liwe spawnpointy w tym przypadku bêdzie to kwadrat. 
-	for (int i = -Half_Square; i < Half_Square; i++) {
-		Monster_Spawn_Points.push_back(vec3(-Half_Square, 0, i));
-		Monster_Spawn_Points.push_back(vec3(Half_Square, 0, i));
-		Monster_Spawn_Points.push_back(vec3(i, 0, -Half_Square));
-		Monster_Spawn_Points.push_back(vec3(i, 0, Half_Square));
-	}
-
-}
 
 void drawText(float x, float y, std::string st);
 void BetterDraw(float x, float y, std::string message, color color);
@@ -135,6 +55,18 @@ int main(int argc, char* argv[])
 				cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
 		}
 	}
+	
+	for (float i = 0; i <= 1; i += 0.1) {
+		points.push_back(Point3D(i, i, i));
+		points.push_back(Point3D(1 - i, 0, 1 - i));
+		points.push_back(Point3D(1 - i, 1, i));
+		//points.push_back(Point3D(0, i, 1-i));
+	}
+
+	/*for (int i = 0; i < 30; i++) {
+		points.push_back(Point3D(GetRandomFloat(), GetRandomFloat(), GetRandomFloat()));
+	}*/
+
 
 	glutInit(&argc, argv);
 
@@ -181,12 +113,7 @@ int main(int argc, char* argv[])
 	mouseY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 	glutSetCursor(GLUT_CURSOR_NONE);
 	
-	Init(); // Ka¿d¹ teksturê ³adujemy *raz* (nie w ka¿dej klatce!), np. przed wejœciem do pêtli g³ównej
-
 	glutMainLoop();
-
-	//TODO usuniêcie modeli!
-	delete AK47;
 
 	return 0;
 	/*
@@ -219,7 +146,6 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	
 	if (key == 13) { // 13 == Enter
 		// Start Gry
-		//Game_Started = true;
 		glutMouseFunc(MouseButton);
 
 		// Console that allows to write etc. 
@@ -259,9 +185,6 @@ void OnKeyDown(unsigned char key, int x, int y) {
 			glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
 			glutSetCursor(GLUT_CURSOR_NONE);
 		}
-	}
-	if (key == 'l' || key == 'L') {
-		free3DMovement = !free3DMovement;
 	}
 }
 
@@ -372,47 +295,6 @@ void OnTimer(int id) {
 
 }
 
-void MonsterSpawner(int id) {
-
-	// losujemy pozycjê startow¹ z wczeœniej przygotowanych koordynatów
-	vec3 Monster_Pos = Monster_Spawn_Points[rand() % Monster_Spawn_Points.size()];
-	
-	// kierunke w którym ma siê poruszaæ 
-	vec3 Monster_Dir;
-
-	//Z neta ! logika nakierowania kierunku potwora na cel -> czyli end_field
-	Monster_Dir.x = End_Field.x - Monster_Pos.x;
-	Monster_Dir.y = 0;
-	Monster_Dir.z = End_Field.z - Monster_Pos.z;
-	float hyp = sqrt(Monster_Dir.x * Monster_Dir.x + Monster_Dir.z * Monster_Dir.z);
-	Monster_Dir.x /= hyp;
-	Monster_Dir.z /= hyp;
-
-	// Dodajemy do listy ¿ywych potworów
-	Monsters.push_back(Monster(Monster_Pos, Monster_Dir));
-
-	glutTimerFunc(Monster_Spawn_Rate, MonsterSpawner, 0);
-}
-
-void BulletFireLogic(int id) {
-	
-	if (shooting) {
-		glutTimerFunc(500, BulletFireLogic, 0);
-		if (Player_Ammo_Amount > 0) {
-			bullets.push_back(Bullet(player.pos,player.dir));
-			Player_Ammo_Amount--;
-		}
-	}
-	
-}
-
-void TimePassed(int id) {
-
-	Time_Passed++;
-	glutTimerFunc(1000, TimePassed, 0);
-
-}
-
 void DrawGUI() 
 {
 	std::stringstream s;
@@ -443,31 +325,18 @@ void DrawGUI()
 #pragma endregion
 }
 
-void DrawMonster(Monster m) {
-	
-	srand(time(NULL));
-	// Ustawienie materia³u
-	float r = GetRandomFloat();
-	float g = GetRandomFloat();
-	float b = GetRandomFloat();
-	float m_amb[] = { 0, 0, 0, 1.0f};
-	float m_dif[] = { r, g, b, 1.0f};
-	float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+void DrawPoint(Point3D p1, double r, double g, double b) {
+	float m_amb[] = { r, g, b, 1.0f };
+	float m_dif[] = { r, g, b, 1.0f };
+	float m_spe[] = { r, g, b, 1.0f };
 	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
 
 	glPushMatrix();
-		glTranslatef(m.pos.x, m.pos.y + 1, m.pos.z);
-		float angle = atan2(m.pos.x - End_Field.x, m.pos.z - End_Field.z);
-		glRotatef(angle*(180 / 3.14), 0.0f, 1.0f, 0.0f);
-		// TODO: tutaj mo¿na wyœwitliæ model jak w przypadku broni.
-		// AK47->render();
-		glScalef(1.0f, m.height, 1.0f);
-		glutSolidCube(1);
-		///////////////////////////////////////////////////////////
+	glTranslatef(p1.getX(), p1.getY(), p1.getZ());
+	glutSolidCube(0.01);
 	glPopMatrix();
-
 }
 
 void DrawLine(Point3D p1, Point3D p2, double r, double g, double b) {
@@ -522,157 +391,18 @@ void OnRender() {
 
 	#pragma endregion
 
-	/*
-	#pragma region Rysowanie scian
-
-		glBegin(GL_QUADS);
-
-			#pragma region Przednia sciana
-			{
-				float m_amb[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-				float m_dif[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-				float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-			
-				glNormal3f( 0.0f,  0.0f,  1.0f);
-				glVertex3f(-Half_Square, Half_Square, -Half_Square);
-
-				glNormal3f( 0.0f,  0.0f,  1.0f);
-				glVertex3f(-Half_Square,  0.0f, -Half_Square);
-
-				glNormal3f( 0.0f,  0.0f,  1.0f);
-				glVertex3f(Half_Square,  0.0f, -Half_Square);
-
-				glNormal3f( 0.0f,  0.0f,  1.0f);
-				glVertex3f(Half_Square, Half_Square, -Half_Square);
-			}
-			#pragma endregion
-
-			#pragma region Lewa sciana
-			{
-				float m_amb[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-				float m_dif[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-				float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-			
-				glNormal3f( 1.0f,  0.0f,  0.0f);
-				glVertex3f(-Half_Square,  0.0f, -Half_Square);
-
-				glNormal3f( 1.0f,  0.0f,  0.0f);
-				glVertex3f(-Half_Square,  Half_Square, -Half_Square);
-
-				glNormal3f( 1.0f,  0.0f,  0.0f);
-				glVertex3f(-Half_Square,  Half_Square,  Half_Square);
-
-				glNormal3f( 1.0f,  0.0f,  0.0f);
-				glVertex3f(-Half_Square,  0.0f,  Half_Square);
-			}
-			#pragma endregion
-
-			#pragma region Prawa sciana
-			{
-				float m_amb[] = { 0.0f, 1.0f, 0.0f, 1.0f };
-				float m_dif[] = { 0.0f, 1.0f, 0.0f, 1.0f };
-				float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-			
-				glNormal3f(-1.0f,  0.0f,  0.0f);
-				glVertex3f( Half_Square,  Half_Square, -Half_Square);
-		
-				glNormal3f(-1.0f,  0.0f,  0.0f);
-				glVertex3f( Half_Square,  0.0f, -Half_Square);
-
-				glNormal3f(-1.0f,  0.0f,  0.0f);
-				glVertex3f( Half_Square,  0.0f,  Half_Square);
-
-				glNormal3f(-1.0f,  0.0f,  0.0f);
-				glVertex3f( Half_Square,  Half_Square,  Half_Square);
-			}
-			#pragma endregion
-
-			#pragma region Tylna sciana
-			{
-				float m_amb[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-				float m_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-				float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-			
-				glNormal3f( 0.0f,  0.0f, -1.0f);
-				glVertex3f(-Half_Square,  0.0f,  Half_Square);
-
-				glNormal3f( 0.0f,  0.0f, -1.0f);
-				glVertex3f(-Half_Square,  Half_Square,  Half_Square);
-
-				glNormal3f( 0.0f,  0.0f, -1.0f);
-				glVertex3f( Half_Square,  Half_Square,  Half_Square);
-
-				glNormal3f( 0.0f,  0.0f, -1.0f);
-				glVertex3f( Half_Square,  0.0f,  Half_Square);
-			}
-			#pragma endregion
-
-			#pragma region Podloga
-			{
-				float m_amb[] = { 1.0f, 0.0f, 1.0f, 1.0f };
-				float m_dif[] = { 1.0f, 0.0f, 1.0f, 1.0f };
-				float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-			
-				glNormal3f( 0.0f,  1.0f,  0.0f);
-				glVertex3f(-Half_Square,  0.0f, -Half_Square);
-
-				glNormal3f( 0.0f,  1.0f,  0.0f);
-				glVertex3f(-Half_Square,  0.0f,  Half_Square);
-
-				glNormal3f( 0.0f,  1.0f,  0.0f);
-				glVertex3f( Half_Square,  0.0f,  Half_Square);
-
-				glNormal3f( 0.0f,  1.0f,  0.0f);
-				glVertex3f( Half_Square,  0.0f, -Half_Square);
-			}
-			#pragma endregion
-
-			#pragma region Sufit
-			{
-				float m_amb[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-				float m_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-				float m_spe[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
-			
-				glNormal3f( 0.0f, -1.0f,  0.0f);
-				glVertex3f(-Half_Square,  Half_Square,  Half_Square);
-
-				glNormal3f( 0.0f, -1.0f,  0.0f);
-				glVertex3f(-Half_Square,  Half_Square, -Half_Square);
-
-				glNormal3f( 0.0f, -1.0f,  0.0f);
-				glVertex3f( Half_Square,  Half_Square, -Half_Square);
-
-				glNormal3f( 0.0f, -1.0f,  0.0f);
-				glVertex3f( Half_Square,  Half_Square,  Half_Square);
-			}
-			#pragma endregion
-
-		glEnd();
-
-	#pragma endregion
-	*/
-
 	//Rysowanie figury
 	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
 	DrawShape(*outter, 1.0, 0.0, 1.0);
+
+	for (auto point : points) {
+		if (shapeConfig->shapes.front().isInside(point)) {
+			DrawPoint(point, 0, 1, 0);
+		}
+		else {
+			DrawPoint(point, 1, 0, 0);
+		}
+	}
 
 	DrawGUI();
 

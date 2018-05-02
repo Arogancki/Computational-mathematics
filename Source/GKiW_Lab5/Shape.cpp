@@ -1,9 +1,12 @@
 #include "stdafx.h"
 #include "Shape.h"
+#include <algorithm>
 
 #define safe false
 #define epsilon 0.01
 #define ABS(x) ((x)<0?-(x):(x))
+#define PointOutside Point2D(-1,-1)
+
 
 #define max_size 5
 
@@ -210,6 +213,12 @@ Point3D funGetMaxZ3(std::vector<Point3D>& _v)
 
 //Point2d
 
+Point2D::Point2D()
+{
+	this->x = -1;
+	this->y = -1;
+}
+
 Point2D::Point2D(double _x, double _y)
 {
 	this->x = _x;
@@ -229,6 +238,11 @@ double Point2D::getY()
 bool Point2D::areEqual(Point2D v1, Point2D v2)
 {
 	return funAreEqual(v1.getX(), v2.getX()) && funAreEqual(v1.getY(), v2.getY());
+}
+
+bool Point2D::operator==(const Point2D & lhs)
+{
+	return lhs.areEqual(lhs, Point2D(x, y));
 }
 
 //Point2d end
@@ -327,13 +341,83 @@ Shape Shape::getCubeAround()
 	return shapeBuilder.getShape(true);
 }
 
-double Shape::getFieldOfCube()
-{
+double Shape::getFieldOfCube(){
 	double width = funGetDistance(this->base[0], this->base[1]);
 	double length = funGetDistance(this->base[1], this->base[2]);
 	double hight = funGetDistance(this->base[0], this->side1[2]);
 	return width * length * hight;
 }
+
+bool Shape::isInside(Point3D _pointToCheck)
+{
+	auto pointOutOfRange = PointOutside;
+
+	auto lineToCheck = Line(pointOutOfRange, Point2D(_pointToCheck.getX(), _pointToCheck.getZ()));
+	auto isIsideBottom = isInside(getBase(), lineToCheck);
+
+	lineToCheck = Line(pointOutOfRange, Point2D(_pointToCheck.getX(), _pointToCheck.getY()));
+	auto isIsideSide1 = isInside(getSide1(), lineToCheck);
+
+	lineToCheck = Line(pointOutOfRange, Point2D(_pointToCheck.getZ(), _pointToCheck.getY()));
+	auto isIsideSide2 = isInside(getSide2(), lineToCheck);
+
+	if (isIsideBottom && isIsideSide1 && isIsideSide2)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Shape::isInside(std::vector<Point2D> _shape, Line _lineToCheck)
+{
+	int intersections = 0;
+	std::vector<Point2D> interPoints;
+	IntersectionInfo interInfo = NULL;
+
+	// There is possibility to extract this functionality into new method 
+	//   but it would requirer passing multiple values by reference 
+
+	// iterate through all points and check how many intersections we have
+	for (long i = 1; i < _shape.size(); i++)
+	{
+		auto currentLine = Line(Point2D(_shape[i - 1].getX(), _shape[i - 1].getY()),
+			Point2D(_shape[i].getX(), _shape[i].getY()));
+		interInfo = currentLine.intersect(_lineToCheck);
+		if (interInfo.intersects)
+		{
+			if (std::find(interPoints.begin(), interPoints.end(), interInfo.intersection) == interPoints.end()) {
+				intersections++;
+				if (interInfo.intersection.x >= 0 && interInfo.intersection.y >= 0) {
+					interPoints.push_back(interInfo.intersection);
+				}
+			}
+		}
+	}
+	// check last line from last point to the 1st point
+	auto currentLine = Line(Point2D(_shape.front().getX(), _shape.front().getY()),
+		Point2D(_shape.back().getX(), _shape.back().getY()));
+	interInfo = currentLine.intersect(_lineToCheck);
+	if (interInfo.intersects)
+	{
+		if (std::find(interPoints.begin(), interPoints.end(), interInfo.intersection) == interPoints.end()) {
+			intersections++;
+			if (interInfo.intersection.x >= 0 && interInfo.intersection.y >= 0) {
+				interPoints.push_back(interInfo.intersection);
+			}
+		}
+	}
+
+	// if we have odd number of intersections then point is inside
+	if (intersections % 2 == 1)
+	{
+		return true;
+	}
+	return false;
+}
+
+//Shape end
+
+//ShapeBuilder
 
 void ShapeBuilder::normalize(std::vector<Point3D>& _v)
 {
@@ -373,9 +457,6 @@ void ShapeBuilder::normalize(std::vector<Point3D>& _v)
 	}
 }
 
-//Shape end
-
-//ShapeBuilder
 
 ShapeBuilder::ShapeBuilder()
 {
@@ -561,3 +642,82 @@ void ShapeBuilder::addToSide2(double _x, double _y)
 }
 
 //ShapeBuilder end
+
+Line::Line(Point2D _start, Point2D _end)
+{
+	start = _start;
+	end = _end;
+}
+
+// Source: https://github.com/gregsidelnikov/mosaic.js/blob/master/segment.js
+IntersectionInfo Line::intersect(Line _lineToCheck)
+{
+	// a
+	double x1 = start.getX();
+	double y1 = start.getY();
+	double x2 = end.getX();
+	double y2 = end.getY();
+
+	// b
+	double x3 = _lineToCheck.getStart().getX();
+	double y3 = _lineToCheck.getStart().getY();
+	double x4 = _lineToCheck.getEnd().getX();
+	double y4 = _lineToCheck.getEnd().getY();
+
+	double a1, a2, b1, b2, c1, c2;
+	double r1, r2, r3, r4;
+	double denom, offset, num;
+
+	a1 = y2 - y1;
+	b1 = x1 - x2;
+	c1 = (x2 * y1) - (x1 * y2);
+
+	r3 = ((a1 * x3) + (b1 * y3) + c1);
+	r4 = ((a1 * x4) + (b1 * y4) + c1);
+
+	if ((r3 != 0) && (r4 != 0) && ((r3 * r4) >= 0))
+		return IntersectionInfo(false);
+
+	a2 = y4 - y3; // Compute a2, b2, c2
+	b2 = x3 - x4;
+	c2 = (x4 * y3) - (x3 * y4);
+	r1 = (a2 * x1) + (b2 * y1) + c2; // Compute r1 and r2
+	r2 = (a2 * x2) + (b2 * y2) + c2;
+
+	if ((r1 != 0) && (r2 != 0) && ((r1 * r2) >= 0))
+		return IntersectionInfo(false);
+
+	denom = (a1 * b2) - (a2 * b1); //Line segments intersect: compute intersection point.
+
+	// równoleg³e co z tym ?
+	if (denom == 0)
+		return IntersectionInfo(true);
+
+	if (denom < 0) offset = -denom / 2; else offset = denom / 2;
+
+	int x, y;
+	num = (b1 * c2) - (b2 * c1);
+	if (num < 0) 
+		x = (num - offset) / denom; 
+	else 
+		x = (num + offset) / denom;
+
+	num = (a2 * c1) - (a1 * c2);
+
+	if (num < 0)  
+		y = (num - offset) / denom; 
+	else 
+		y = (num + offset) / denom;
+
+	return IntersectionInfo(Point2D(x, y));
+}
+
+Point2D Line::getStart()
+{
+	return this->start;
+}
+
+Point2D Line::getEnd()
+{
+	return this->end;
+}

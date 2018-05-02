@@ -4,13 +4,15 @@
 class Point2D {
 public:
 	double x, y;
+	Point2D();
 	Point2D(double, double);
 	double getX();
 	double getY();
 	static bool areEqual(Point2D, Point2D);
+	bool operator==(const Point2D& lhs);
 };
 
-class Point3D : public Point2D{
+class Point3D : public Point2D {
 public:
 	double z;
 	Point3D(double, double, double);
@@ -18,7 +20,26 @@ public:
 	static bool areEqual(Point3D, Point3D);
 };
 
-class Shape{
+class IntersectionInfo{
+public:
+	bool intersects;
+	Point2D intersection;
+	IntersectionInfo(bool _intersects) : intersects(_intersects), intersection(Point2D(-1, -1)) { ; };
+	IntersectionInfo(Point2D point) : intersects(true), intersection(Point2D(point.getX(), point.getY())) { ; };
+};
+
+class Line {
+private:
+	Point2D start;
+	Point2D end;
+public:
+	Line(Point2D, Point2D);
+	IntersectionInfo intersect(Line);
+	Point2D getStart();
+	Point2D getEnd();
+};
+
+class Shape {
 private:
 	bool includes;
 	std::vector<Point3D> points;
@@ -34,9 +55,12 @@ public:
 	std::vector<Point3D> getPoints();
 	Shape getCubeAround();
 	double getFieldOfCube();
+	bool isInside(Point3D);
+private:
+	bool isInside(std::vector<Point2D>, Line);
 };
 
-class ShapeBuilder{
+class ShapeBuilder {
 private:
 	void normalize(std::vector<Point2D>&);
 	void normalize(std::vector<Point3D>&);
