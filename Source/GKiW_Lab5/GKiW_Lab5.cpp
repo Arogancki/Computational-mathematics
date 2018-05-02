@@ -6,6 +6,7 @@
 
 #pragma region Zmienne globalne
 SCameraState player;
+std::vector<Point3D> points;
 
 // Game
 bool captureMouse = true;
@@ -50,6 +51,18 @@ int main(int argc, char* argv[])
 				cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
 		}
 	}
+	
+	for (float i = 0; i <= 1; i += 0.1) {
+		points.push_back(Point3D(i, i, i));
+		points.push_back(Point3D(1 - i, 0, 1 - i));
+		points.push_back(Point3D(1 - i, 1, i));
+		//points.push_back(Point3D(0, i, 1-i));
+	}
+
+	/*for (int i = 0; i < 30; i++) {
+		points.push_back(Point3D(GetRandomFloat(), GetRandomFloat(), GetRandomFloat()));
+	}*/
+
 
 	glutInit(&argc, argv);
 
@@ -307,6 +320,20 @@ void DrawGUI()
 #pragma endregion
 }
 
+void DrawPoint(Point3D p1, double r, double g, double b) {
+	float m_amb[] = { r, g, b, 1.0f };
+	float m_dif[] = { r, g, b, 1.0f };
+	float m_spe[] = { r, g, b, 1.0f };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
+
+	glPushMatrix();
+	glTranslatef(p1.getX(), p1.getY(), p1.getZ());
+	glutSolidCube(0.01);
+	glPopMatrix();
+}
+
 void DrawLine(Point3D p1, Point3D p2, double r, double g, double b) {
 	glLineWidth(2.0);
 	float m_amb[] = { r, g, b, 1.0f };
@@ -361,8 +388,15 @@ void OnRender() {
 
 	//Rysowanie figury
 	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
-	//DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
 
+	for (auto point : points) {
+		if (shapeConfig->shapes.front().isInside(point)) {
+			DrawPoint(point, 0, 1, 0);
+		}
+		else {
+			DrawPoint(point, 1, 0, 0);
+		}
+	}
 	DrawGUI();
 
 	glutSwapBuffers();
