@@ -25,13 +25,13 @@ double FileParser::readNumber(std::ifstream& _file)
 	std::stringstream number;
 	do {
 		singleCharacter = readChar(_file);
-		// has to be /d or .
+		// has to be /d or . or -
 		if (singleCharacter == EOF)
 			throw std::runtime_error("Unexpected end of the file!");
 		if (singleCharacter == ';' || singleCharacter == ',') {
 			break;
 		}
-		if (!isdigit(singleCharacter) && singleCharacter != '.') {
+		if (!isdigit(singleCharacter) && singleCharacter != '.' && singleCharacter != '-') {
 			throw std::runtime_error("Unexpected token: " + singleCharacter + '!');
 		}
 		number << singleCharacter;

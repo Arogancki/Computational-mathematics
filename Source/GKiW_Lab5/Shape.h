@@ -33,6 +33,7 @@ public:
 	std::vector<Point2D> getSide2();
 	std::vector<Point3D> getPoints();
 	Shape getCubeAround();
+	double getFieldOfCube();
 };
 
 class ShapeBuilder{

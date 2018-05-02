@@ -5,9 +5,33 @@
 #define epsilon 0.01
 #define ABS(x) ((x)<0?-(x):(x))
 
-#define max_x 10
-#define max_y 10
-#define max_z 10
+#define max_size 5
+
+double funMaximum(double a, double b, double c)
+{
+	if (a > b) {
+		if (a > c) {
+			return a;
+		}
+		else {
+			return c;
+		}
+	}
+	else {
+		if (b > c) {
+			return b;
+		}
+		return c;
+	}
+}
+
+double funGetDistance(double x1, double y1, double x2, double y2) {
+	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
+
+double funGetDistance(Point2D v1, Point2D v2) {
+	return funGetDistance(v1.x, v1.y, v2.x, v2.y);
+}
 
 bool funAreEqual(double _x, double _y)
 {
@@ -184,10 +208,6 @@ Point3D funGetMaxZ3(std::vector<Point3D>& _v)
 	return _v[maxIndex];
 }
 
-double funNormalize(double val, double min, double max) {
-	return (val - min) / (max - min);
-}
-
 //Point2d
 
 Point2D::Point2D(double _x, double _y)
@@ -307,58 +327,49 @@ Shape Shape::getCubeAround()
 	return shapeBuilder.getShape(true);
 }
 
-void ShapeBuilder::normalize(std::vector<Point2D>& _v)
+double Shape::getFieldOfCube()
 {
-	Point2D minX = funGetMinX2(_v);
-	Point2D minY = funGetMinY2(_v);
-	for (Point2D p : _v){
-		p.x += minX.x;
-		p.y += minY.y;
-	}
-	minX = funGetMinX2(_v);
-	minY = funGetMinY2(_v);
-	Point2D maxX = funGetMaxX2(_v);
-	Point2D maxY = funGetMaxY2(_v);
-
-	double d_minX = minX.x < 0 ? 0 : minX.x;
-	double d_minY = minY.y < 0 ? 0 : minY.y;
-	double d_maxX = maxX.x > max_x ? max_x : maxX.x;
-	double d_maxY = maxY.y > max_y ? max_y : maxY.y;
-
-	for (Point2D p : _v) {
-		p.x = funNormalize(p.x, d_minX, d_maxX);
-		p.y = funNormalize(p.y, d_minY, d_maxY);
-	}
+	double width = funGetDistance(this->base[0], this->base[1]);
+	double length = funGetDistance(this->base[1], this->base[2]);
+	double hight = funGetDistance(this->base[0], this->side1[2]);
+	return width * length * hight;
 }
 
 void ShapeBuilder::normalize(std::vector<Point3D>& _v)
 {
+	// przwesuniecie ze zaczynaja sie od 0
 	Point3D minX = funGetMinX3(_v);
 	Point3D minY = funGetMinY3(_v);
 	Point3D minZ = funGetMinZ3(_v);
-	for (Point3D p : _v) {
-		p.x += minX.x;
-		p.y += minY.y;
-		p.z += minZ.z;
+
+	for (Point3D &p : _v) {
+		p.x += abs(minX.x);
+		p.y += abs(minY.y);
+		p.z += abs(minZ.z);
 	}
+	
 	minX = funGetMinX3(_v);
 	minY = funGetMinY3(_v);
 	minZ = funGetMinZ3(_v);
+
+	for (Point3D &p : _v) {
+		p.x -= abs(minX.x);
+		p.y -= abs(minY.y);
+		p.z -= abs(minZ.z);
+	}
+
+	// normalizacja rozmiaru
+
 	Point3D maxX = funGetMaxX3(_v);
 	Point3D maxY = funGetMaxY3(_v);
 	Point3D maxZ = funGetMaxZ3(_v);
+	
+	double ratio = funMaximum(maxX.x, maxY.y, maxZ.z) / max_size;
 
-	double d_minX = minX.x < 0 ? 0 : minX.x;
-	double d_minY = minY.y < 0 ? 0 : minY.y;
-	double d_minZ = minZ.z < 0 ? 0 : minZ.z;
-	double d_maxX = maxX.x > max_x ? max_x : maxX.x;
-	double d_maxY = maxY.y > max_y ? max_y : maxY.y;
-	double d_maxZ = maxZ.z > max_z ? max_z : maxZ.z;
-
-	for (Point3D p : _v) {
-		p.x = funNormalize(p.x, d_minX, d_maxX);
-		p.y = funNormalize(p.y, d_minY, d_maxY);
-		p.z = funNormalize(p.z, d_minZ, d_maxZ);
+	for (Point3D &p : _v) {
+		p.x /= ratio;
+		p.y /= ratio;
+		p.z /= ratio;
 	}
 }
 
@@ -372,13 +383,31 @@ ShapeBuilder::ShapeBuilder()
 
 Shape ShapeBuilder::getShape(bool _includes)
 {
-	if (safe)
+	normalize(this->points);
+	for (Point3D &p : this->points) {
+		// check ./shapeBuilderSheme.png for an explaination
+		if (!this->contains(base, p.x, p.z))
+			this->base.push_back(Point2D(p.x, p.z));
+		if (!this->contains(side1, p.x, p.y))
+			this->side1.push_back(Point2D(p.x, p.y));
+		if (!this->contains(side2, p.z, p.y))
+			this->side2.push_back(Point2D(p.z, p.y));
+	}
+	if (safe) {
 		if (this->base.size() < 3 || this->side1.size() < 3 || this->side2.size() < 3)
 			throw std::runtime_error("Every side of a shape has to have at least 3 coordinates!");
-	normalize(this->base);
-	normalize(this->side1);
-	normalize(this->side2);
-	normalize(this->points);
+		//TODO sprawdzic czy kazdy !wezel! ma 3 sasiadow
+		// quick and dirty solution - O(n*n)
+		for (Point3D &p : this->points) {
+			int i = 0;
+			for (Point3D &pp : this->points) {
+				if (funAreEqual(p.x, pp.x) && funAreEqual(p.y, pp.y) && funAreEqual(p.z, pp.z))
+					i++;
+			}
+			if (i<3)
+				throw std::runtime_error("Every point needs to be connected to at least 3 points!");
+		}
+	}
 	return Shape(_includes, this->base, this->side1, this->side2, this->points);
 }
 
@@ -397,13 +426,6 @@ void ShapeBuilder::add(double _x, double _y, double _z)
 		}
 	}
 	this->points.push_back(point3D);
-	// check ./shapeBuilderSheme.png for an explaination
-	if (!this->contains(base, _x, _z))
-		this->base.push_back(Point2D(_x, _z));
-	if (!this->contains(side1, _x, _y))
-		this->side1.push_back(Point2D(_x, _y));
-	if (!this->contains(side2, _z, _y))
-		this->side2.push_back(Point2D(_z, _y));
 }
 
 bool ShapeBuilder::doesLineExist(Point3D p1, Point3D p2)

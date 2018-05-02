@@ -108,9 +108,10 @@ float GetRandomFloat() {
 }
 
 ParsedData *shapeConfig;
+Shape *outter;
 int main(int argc, char* argv[])
 {
-	try {
+	//try {
 	// load file
 	string filePath;
 	cout << "Please enter path to file with shape specification:\n";
@@ -121,6 +122,9 @@ int main(int argc, char* argv[])
 
 	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
 	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
+
+	Shape sssss = sc.shapes[0].getCubeAround();
+	outter = &sssss;
 
 	if (debug) {
 		int i = 0;
@@ -185,13 +189,14 @@ int main(int argc, char* argv[])
 	delete AK47;
 
 	return 0;
-	}
-	catch (const std::exception exceptional_result) {
+	/*
+	}catch (const std::exception exceptional_result) {
 		std::cout << exceptional_result.what() << '\n';
 		string x;
 		cin >> x;
 		return -1;
 	}
+	*/
 }
 
 #pragma region Obsluga wejscia
@@ -667,7 +672,7 @@ void OnRender() {
 
 	//Rysowanie figury
 	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
-	DrawShapes(shapeConfig->shapes.get, 0.0, 0.0, 1.0);
+	DrawShape(*outter, 1.0, 0.0, 1.0);
 
 	DrawGUI();
 
