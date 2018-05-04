@@ -416,20 +416,28 @@ void OnRender() {
 	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
 	
 	// figura opatulujaca
-	for (Shape &sssss : outters) {
-		DrawShape(sssss, 1.0, 0.0, 1.0);
-	}
+	if (shapeConfig->type == 'M')
+		for (Shape &sssss : outters) {
+			DrawShape(sssss, 1.0, 0.0, 1.0);
+		}
 	
 	// dla methody kwadratow rysowanie
 	if (shapeConfig->type == 'R') {
 		double volume = 0.0;
+		int i = -1;
 		for (rectangleMethodResults &rrrr : resultsR) {
+			i++;
 			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
-			volume += rrrr.getVolume();
+			if (shapeConfig->shapes[i].getIncludes()) {
+				volume += rrrr.getVolume();
+			}
+			else {
+				volume -= rrrr.getVolume();
+			}
 		}
 		std::ostringstream s;
-		s << "Rectangle method volume = " << volume;
-		int x = 8;
+		s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
+		int x = 6;
 		int y = 58;
 		BetterDraw(x, y, s.str(), WHITE);
 	}
