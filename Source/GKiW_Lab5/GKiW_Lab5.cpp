@@ -28,7 +28,8 @@ float GetRandomFloat() {
 }
 
 ParsedData *shapeConfig;
-Shape *outter;
+std::vector<Shape> outters = std::vector<Shape>();
+std::vector<rectangleMethodResults> resultsR = std::vector<rectangleMethodResults>();
 int main(int argc, char* argv[])
 {
 	//try {
@@ -43,8 +44,23 @@ int main(int argc, char* argv[])
 	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
 	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
 
-	Shape sssss = sc.shapes[0].getCubeAround();
-	outter = &sssss;
+	for (Shape &ssssssssss : shapeConfig->shapes) {
+		Shape rmr = ssssssssss.getCubeAround();
+		outters.push_back(rmr);
+	}
+
+	if (shapeConfig->type == 'R') {
+		for (Shape &ssssssssss : shapeConfig->shapes) {
+			rectangleMethodResults rmr = ssssssssss.rectangleMethod(sc.value);
+			resultsR.push_back(rmr);
+		}
+	}
+
+	if (shapeConfig->type == 'M') {
+		for (Shape &ssssssssss : shapeConfig->shapes) {
+			// TODO monte carlo here!!
+		}
+	}
 
 	if (debug) {
 		int i = 0;
@@ -363,7 +379,10 @@ void DrawShape(Shape shape, double r, double g, double b) {
 
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
 	for (Shape shape : shapes)
-		DrawShape(shape, r, g, b);
+		if (shape.getIncludes())
+			DrawShape(shape, r, g, b);
+		else
+			DrawShape(shape, (r*-1.0)+1, (g*-1.0)+1, (b*-1.0)+1);
 }
 
 void OnRender() {
@@ -392,8 +411,29 @@ void OnRender() {
 	#pragma endregion
 
 	//Rysowanie figury
+
+	// glowna figura
 	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
-	DrawShape(*outter, 1.0, 0.0, 1.0);
+	
+	// figura opatulujaca
+	for (Shape &sssss : outters) {
+		DrawShape(sssss, 1.0, 0.0, 1.0);
+	}
+	
+	// dla methody kwadratow rysowanie
+	if (shapeConfig->type == 'R') {
+		double volume = 0.0;
+		for (rectangleMethodResults &rrrr : resultsR) {
+			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
+			volume += rrrr.getVolume();
+		}
+		std::ostringstream s;
+		s << "Rectangle method volume = " << volume;
+		int x = 8;
+		int y = 58;
+		BetterDraw(x, y, s.str(), WHITE);
+	}
+
 
 	for (auto point : points) {
 		if (shapeConfig->shapes.front().isInside(point)) {

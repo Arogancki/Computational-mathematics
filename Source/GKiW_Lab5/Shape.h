@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 
+class rectangleMethodResults;
+
 class Point2D {
 public:
 	double x, y;
@@ -46,7 +48,9 @@ private:
 	std::vector<Point2D> base;
 	std::vector<Point2D> side1;
 	std::vector<Point2D> side2;
+	bool isInside(std::vector<Point2D>, Line);
 public:
+	rectangleMethodResults rectangleMethod(int);
 	Shape(bool, std::vector<Point2D>, std::vector<Point2D>, std::vector<Point2D>, std::vector<Point3D>);
 	bool getIncludes();
 	std::vector<Point2D> getBase();
@@ -56,13 +60,10 @@ public:
 	Shape getCubeAround();
 	double getFieldOfCube();
 	bool isInside(Point3D);
-private:
-	bool isInside(std::vector<Point2D>, Line);
 };
 
 class ShapeBuilder {
 private:
-	void normalize(std::vector<Point2D>&);
 	void normalize(std::vector<Point3D>&);
 	std::vector<Point2D> base;
 	std::vector<Point2D> side1;
@@ -73,6 +74,7 @@ private:
 	void addTo(double, double, std::vector<Point2D>&);
 	bool contains(std::vector<Point2D>&, double, double);
 public:
+	double normalizeRatio = 1.0;
 	Point2D getMinXBase();
 	Point2D getMinYBase();
 	Point2D getMinXSide1();
@@ -96,5 +98,15 @@ public:
 	void addToBase(double, double);
 	void addToSide1(double, double);
 	void addToSide2(double, double);
-	Shape getShape(bool);
+	Shape getShape(bool, bool);
+};
+
+class rectangleMethodResults {
+private:
+	double volume;
+	std::vector<Shape> rectangles;
+public:
+	double getVolume();
+	rectangleMethodResults(double, std::vector<Shape>);
+	std::vector<Shape> getRectangles();
 };

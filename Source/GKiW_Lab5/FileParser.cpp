@@ -85,7 +85,7 @@ Shape FileParser::R(bool _includes, std::ifstream& _file)
 	} while (singleCharacter != '#');
 
 	singleCharacter = readChar(_file); // shift
-	return shapeBuilder.getShape(_includes);
+	return shapeBuilder.getShape(_includes, true);
 }
 
 Shape FileParser::N(bool _includes, std::ifstream& _file)
@@ -110,7 +110,7 @@ Shape FileParser::N(bool _includes, std::ifstream& _file)
 	} while (singleCharacter != '#');
 
 	singleCharacter = readChar(_file); // shift
-	return shapeBuilder.getShape(_includes);
+	return shapeBuilder.getShape(_includes, true);
 }
 
 Shape FileParser::readShape(std::ifstream& _file)
