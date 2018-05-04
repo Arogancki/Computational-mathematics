@@ -10,6 +10,7 @@
 
 
 #define max_size 2
+double funGetDistance(double, double, double, double);
 
 Shape funMakeRectangle(double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
 	ShapeBuilder shapeBuilder = ShapeBuilder();
@@ -310,7 +311,15 @@ bool funDoesContain(std::vector<Point3D> _v, Point3D _p) {
 	return false;
 }
 
-rectangleMethodResults Shape::rectangleMethod(int n)
+
+
+rectangleMethodResults Shape::rectangleMethod(int n) {
+	rectangleMethod2d(this->base, n);
+	std::vector<Shape> rectangles = std::vector<Shape>();
+	return rectangleMethodResults(0, rectangles);
+}
+
+rectangleMethodResults Shape::rectangleMethod2(int n)
 {
 	// ten sposob nie zadziala dla bardziej skomplikowanych figur
 	// trzeba robic to dla rzutow z wykorzystaniem funGetYfromPoints
@@ -665,6 +674,15 @@ bool Shape::isInside(Point3D _pointToCheck)
 	return false;
 }
 
+std::vector<Point2D> Shape::rectangleMethod2d(std::vector<Point2D>& _v, int n)
+{
+	std::vector<Point2D> rectangles = std::vector<Point2D>();
+	Point2D main = _v[0];
+
+
+	return std::vector<Point2D>();
+}
+
 bool Shape::isInside(std::vector<Point2D> _shape, Line _lineToCheck)
 {
 	int intersections = 0;
@@ -815,6 +833,7 @@ void ShapeBuilder::addTo(double _x, double _y, std::vector<Point2D>& _v)
 
 bool ShapeBuilder::contains(std::vector<Point2D>& _v, double _x, double _y)
 {
+	return false;
 	for (Point2D e : _v) {
 		if (funAreEqual(e.getX(), _x)
 			&& funAreEqual(e.getY(), _y))

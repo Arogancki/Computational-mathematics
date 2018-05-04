@@ -43,6 +43,7 @@ public:
 
 class Shape {
 private:
+	std::vector<Point2D> rectangleMethod2d(std::vector<Point2D>&, int);
 	bool includes;
 	std::vector<Point3D> points;
 	std::vector<Point2D> base;
@@ -50,6 +51,7 @@ private:
 	std::vector<Point2D> side2;
 	bool isInside(std::vector<Point2D>, Line);
 public:
+	rectangleMethodResults rectangleMethod2(int);
 	rectangleMethodResults rectangleMethod(int);
 	Shape(bool, std::vector<Point2D>, std::vector<Point2D>, std::vector<Point2D>, std::vector<Point3D>);
 	bool getIncludes();
