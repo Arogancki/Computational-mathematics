@@ -40,11 +40,6 @@ Shape funMakeRectangle(double minX, double maxX, double minY, double maxY, doubl
 	return shapeBuilder.getShape(true, false);
 }
 
-
-double funGetYfromPoints(double x1, double y1, double x2, double y2, double x) {
-	return y1 + ((x - x1) * (funGetDistance(y1, 0, y2, 0) / funGetDistance(x1, 0, x2, 0)));
-}
-
 double funMaximum(double a, double b, double c)
 {
 	if (a > b) {
@@ -310,11 +305,15 @@ bool funDoesContain(std::vector<Point3D> _v, Point3D _p) {
 	return false;
 }
 
+
+double getYfromPoints(double x1, double y1, double x2, double y2, double x) {
+	return y1 + ((x - x1) * (funGetDistance(y1, 0, y2, 0) / funGetDistance(x1, 0, x2, 0)));
+}
+
 rectangleMethodResults Shape::rectangleMethod(int n)
 {
+	double xasdads = getYfromPoints(5, 6, 3, 4, 1);
 	// ten sposob nie zadziala dla bardziej skomplikowanych figur
-	// trzeba robic to dla rzutow z wykorzystaniem funGetYfromPoints
-
 	Point3D main = this->points[0];
 	std::vector<Point3D> connectedToMain = std::vector<Point3D>();
 	bool nextIsConnectedToMain = false;
