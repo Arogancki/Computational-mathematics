@@ -39,89 +39,9 @@ double FileParser::readNumber(std::ifstream& _file)
 	return atof(number.str().c_str());
 }
 
-Shape FileParser::R(bool _includes, std::ifstream& _file)
-{
-	char singleCharacter;
-	ShapeBuilder shapeBuilder = ShapeBuilder();
-	double number1;
-	double number2;
-
-	// build base
-	do {
-		number1 = readNumber(_file);
-		number2 = readNumber(_file);
-		shapeBuilder.addToBase(number1, number2);
-		singleCharacter = readChar(_file);
-		if (singleCharacter == EOF) {
-			throw std::runtime_error("Unexpected end of a file!");
-		}
-		_file.seekg(-1L, std::ifstream::cur);
-	} while (singleCharacter != '&');
-
-	singleCharacter = readChar(_file); // shift
-	// build side1
-	do {
-		number1 = readNumber(_file);
-		number2 = readNumber(_file);
-		shapeBuilder.addToSide1(number1, number2);
-		singleCharacter = readChar(_file);
-		if (singleCharacter == EOF) {
-			throw std::runtime_error("Unexpected end of a file!");
-		}
-		_file.seekg(-1L, std::ifstream::cur);
-	} while (singleCharacter != '&');
-
-	singleCharacter = readChar(_file); // shift
-	// build side2
-	do {
-		number1 = readNumber(_file);
-		number2 = readNumber(_file);
-		shapeBuilder.addToSide2(number1, number2);
-		singleCharacter = readChar(_file);
-		if (singleCharacter == EOF) {
-			throw std::runtime_error("Unexpected end of a file!");
-		}
-		_file.seekg(-1L, std::ifstream::cur);
-	} while (singleCharacter != '#');
-
-	singleCharacter = readChar(_file); // shift
-	return shapeBuilder.getShape(_includes, true);
-}
-
-Shape FileParser::N(bool _includes, std::ifstream& _file)
-{
-	char singleCharacter;
-	ShapeBuilder shapeBuilder = ShapeBuilder();
-	double number1;
-	double number2;
-	double number3;
-
-	// build base
-	do {
-		number1 = readNumber(_file);
-		number2 = readNumber(_file);
-		number3 = readNumber(_file);
-		shapeBuilder.add(number1, number2, number3);
-		singleCharacter = readChar(_file);
-		if (singleCharacter == EOF) {
-			throw std::runtime_error("Unexpected end of a file!");
-		}
-		_file.seekg(-1L, std::ifstream::cur);
-	} while (singleCharacter != '#');
-
-	singleCharacter = readChar(_file); // shift
-	return shapeBuilder.getShape(_includes, true);
-}
-
 Shape FileParser::readShape(std::ifstream& _file)
 {
 	char singleCharacter;
-	singleCharacter = readChar(_file);
-	// the first has to be the R or N
-	if (singleCharacter != 'R' && singleCharacter != 'N') {
-		throw std::runtime_error("A shape must starts with R or N!");
-	}
-	bool isR = singleCharacter == 'R';
 
 	singleCharacter = readChar(_file);
 	// the second has to be the 1 or 0
@@ -130,12 +50,45 @@ Shape FileParser::readShape(std::ifstream& _file)
 	}
 	bool includes = singleCharacter == '1';
 
-	if (isR) {
-		return R(includes, _file);
-	}
-	else {
-		return N(includes, _file);
-	}
+	ShapeBuilder shapeBuilder = ShapeBuilder();
+	double number1;
+	double number2;
+	double number3;
+
+	do {
+		number1 = readNumber(_file);
+		number2 = readNumber(_file);
+		number3 = readNumber(_file);
+
+		// read projection exceptions
+		bool B = false, F = false, S = false;
+		do {
+			singleCharacter = readChar(_file);
+			if (singleCharacter == 'B' || singleCharacter == 'b' ||
+				singleCharacter == 'F' || singleCharacter == 'f' ||
+				singleCharacter == 'S' || singleCharacter == 's') {
+				B = B || singleCharacter == 'B' || singleCharacter == 'b';
+				F = F || singleCharacter == 'F' || singleCharacter == 'f';
+				S = S || singleCharacter == 'S' || singleCharacter == 's';
+			}
+			else {
+				if (singleCharacter != ';') {
+					_file.seekg(-1L, std::ifstream::cur);
+				}
+				break;
+			}
+		} while (true);
+
+		shapeBuilder.add(number1, number2, number3, B, F, S);
+		singleCharacter = readChar(_file);
+		if (singleCharacter == EOF) {
+			throw std::runtime_error("Unexpected end of a file!");
+		}
+		_file.seekg(-1L, std::ifstream::cur);
+	} while (singleCharacter != '#');
+
+	singleCharacter = readChar(_file); // shift
+	return shapeBuilder.getShape(includes, true);
 }
 
 ParsedData FileParser::parse(std::string filePath)

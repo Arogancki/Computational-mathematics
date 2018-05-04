@@ -16,8 +16,10 @@ public:
 
 class Point3D : public Point2D {
 public:
+	bool B = false, F = false, S=false;
 	double z;
 	Point3D(double, double, double);
+	Point3D(double, double, double, bool, bool, bool);
 	double getZ();
 	static bool areEqual(Point3D, Point3D);
 };
@@ -96,6 +98,7 @@ public:
 	Point3D getMaxY();
 	Point3D getMaxZ();
 	ShapeBuilder();
+	void add(double, double, double, bool, bool, bool);
 	void add(double, double, double);
 	void addToBase(double, double);
 	void addToSide1(double, double);

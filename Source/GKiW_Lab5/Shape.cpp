@@ -290,6 +290,14 @@ Point3D::Point3D(double _x, double _y, double _z) : Point2D(_x, _y)
 	this->z = _z;
 }
 
+Point3D::Point3D(double _x, double _y, double _z, bool _B, bool _F, bool _S) : Point2D(_x, _y)
+{
+	this->B = _B;
+	this->F = _F;
+	this->S = _S;
+	this->z = _z;
+}
+
 double Point3D::getZ()
 {
 	return this->z;
@@ -678,7 +686,7 @@ std::vector<Point2D> Shape::rectangleMethod2d(std::vector<Point2D>& _v, int n)
 {
 	std::vector<Point2D> rectangles = std::vector<Point2D>();
 	Point2D main = _v[0];
-
+	//TODO here!
 
 	return std::vector<Point2D>();
 }
@@ -784,11 +792,11 @@ Shape ShapeBuilder::getShape(bool _includes, bool doNormalize)
 	}
 	for (Point3D &p : this->points) {
 		// check ./shapeBuilderSheme.png for an explaination
-		if (!this->contains(base, p.x, p.z))
+		if (!p.B && !this->contains(base, p.x, p.z))
 			this->base.push_back(Point2D(p.x, p.z));
-		if (!this->contains(side1, p.x, p.y))
+		if (!p.F && !this->contains(side1, p.x, p.y))
 			this->side1.push_back(Point2D(p.x, p.y));
-		if (!this->contains(side2, p.z, p.y))
+		if (!p.S && !this->contains(side2, p.z, p.y))
 			this->side2.push_back(Point2D(p.z, p.y));
 	}
 	if (safe) {
@@ -809,9 +817,14 @@ Shape ShapeBuilder::getShape(bool _includes, bool doNormalize)
 	return Shape(_includes, this->base, this->side1, this->side2, this->points);
 }
 
+void ShapeBuilder::add(double _x, double _y, double _z, bool B, bool F, bool S)
+{
+	this->points.push_back(Point3D(_x, _y, _z, B, F, S));
+}
+
 void ShapeBuilder::add(double _x, double _y, double _z)
 {
-	this->points.push_back(Point3D(_x, _y, _z));
+	this->points.push_back(Point3D(_x, _y, _z, false, false, false));
 }
 
 bool ShapeBuilder::doesLineExist(Point3D p1, Point3D p2)
@@ -833,7 +846,6 @@ void ShapeBuilder::addTo(double _x, double _y, std::vector<Point2D>& _v)
 
 bool ShapeBuilder::contains(std::vector<Point2D>& _v, double _x, double _y)
 {
-	return false;
 	for (Point2D e : _v) {
 		if (funAreEqual(e.getX(), _x)
 			&& funAreEqual(e.getY(), _y))

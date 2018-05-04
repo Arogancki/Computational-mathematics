@@ -1,3 +1,5 @@
+
+BFS - okresla ze punkt jest nie brany pod uwage przy tworzeniu rzutu
 Plik wejsciowy zaczyna sie linijka konfiguracyjna
 okreslajaca metode - R prostokonty lub M monte carlo, liczba konfiguracyjna metody i znakiem ; (lub ,)
 np 
