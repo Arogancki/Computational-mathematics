@@ -1,0 +1,881 @@
+
+<!-- saved from url=(0045)http://eduinf.waw.pl/inf/alg/004_int/0005.php -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-2">
+
+<meta http-equiv="Content-Language" content="pl">
+<title>Całkowanie numeryczne: Metoda Monte Carlo</title>
+<meta name="keywords" content="całka,całkowanie,komputer,metoda prostokatów,metoda trapezów,metoda Simpsona,metoda Monte Carlo,komputer,serwis edukacyjny,c++,pascal,basic,java script,programowanie,informatyka,matura">
+<meta name="description" content="Zawiera omówienie podstawowych metod całkowania numerycznego">
+<link rel="stylesheet" type="text/css" href="./Całkowanie numeryczne_ Metoda Monte Carlo_files/002.css">
+<script async="" src="https://www.google-analytics.com/analytics.js"></script><script type="text/javascript" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/h.js.pobrane"></script>
+<!--<base target="_top">--><base href="." target="_top">
+        <script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-2048408300128807",
+    enable_page_level_ads: true
+  });
+</script>
+</head>
+
+
+<body cz-shortcut-listen="true">
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-103895862-1', 'auto');
+  ga('send', 'pageview');
+
+</script><table border="0" cellpadding="4" style="border-collapse: collapse" width="100%" class="round_title">
+	<tbody><tr>
+		<td width="200" style="text-align: center" valign="top" rowspan="2">
+			<font color="#FFFFFF"><b>Serwis Edukacyjny<br>
+		Nauczycieli<br>
+			</b>w I-LO w Tarnowie</font><br>
+<a href="http://www.i-lo.tarnow.pl/">
+<img border="0" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/i-lo_logo_dark.gif" width="164" height="170" alt="Do strony głównej I LO w Tarnowie"></a><p style="line-height: 100%">
+		<font color="#FFFFFF"><span class="small">Materiały dla uczniów liceum</span></font></p>
+		<p style="line-height: 100%" class="small"><span class="small">
+		Zoptymalizowane dla<br>
+		<img border="0" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/ie.gif"></span>&nbsp;&nbsp;<img border="0" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/firefox.gif"><br>
+		1280 x 1024</p></td>
+		<td style="text-align: center" valign="top">
+	<p><a class="mbutton" href="http://eduinf.waw.pl/inf/index.php"> &nbsp; Wyjście &nbsp; </a> &nbsp; <a class="mbutton" href="http://eduinf.waw.pl/inf/alg/004_int/index.php"> &nbsp; Spis treści &nbsp; </a> &nbsp;  <a class="mbutton" href="http://eduinf.waw.pl/inf/alg/004_int/0004.php"> &nbsp; Poprzedni &nbsp; </a> &nbsp;  <a class="mbutton" href="http://eduinf.waw.pl/inf/alg/004_int/0006.php"> &nbsp; Następny &nbsp; </a>
+</p>
+</td>
+		<td width="200" style="text-align: center" valign="top" rowspan="2">
+    <p class="small" style="line-height: 100%; margin-bottom: 0">
+&#169;2018 mgr Jerzy Wałaszek<br>
+I LO w Tarnowie</p>    <p>
+	<img border="0" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/000_logo.jpg"></p>
+    	</td>
+	</tr>
+	<tr>
+		<td style="text-align: center; padding-top: 0" valign="top">
+<p class="small">
+<img border="0" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/000_title.jpg" width="639" height="278"></p>
+		<p class="small">Autor artykułu: mgr Jerzy Wałaszek</p></td>
+	</tr>
+</tbody></table>
+<p class="small">&nbsp;</p>
+<table border="0" width="100%" cellpadding="0" style="border-collapse: collapse">
+	<tbody><tr>
+		<td style="padding:4px; text-align: center" height="100"><script async="" src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- normal_page -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2048408300128807" data-ad-slot="9328341371" data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</td>
+	</tr>
+</tbody></table>
+<p class="small">&nbsp;</p>
+<div align="center">
+	<table border="0" cellpadding="4" style="border-collapse: collapse">
+		<tbody><tr>
+			<td class="round_top">
+			<h1 style="text-align: center">Metoda Monte Carlo</h1>
+			</td>
+		</tr>
+		<tr>
+			<td class="round_bottom" valign="top">
+			<table border="0" cellpadding="4" style="border-collapse: collapse" width="100%">
+				<tbody><tr>
+					<td style="text-align: left" valign="top"><b>W tym rozdziale:</b><div class="sb1">
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0005.php#P1">Algorytm</a><br>
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0005.php#P2">Przykładowe programy</a></div>
+					</td>
+					<td style="text-align: left" valign="top"><b>Zobacz również na:</b><div class="sb1">
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0001.php">Wstęp</a><br>
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0002.php">Metoda prostokątów</a><br>
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0003.php">Metoda trapezów</a><br>
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0004.php">Metoda Simpsona</a><br>
+						<a href="http://eduinf.waw.pl/inf/alg/004_int/0006.php">Podsumowanie</a></div>
+					</td>
+				</tr>
+				</tbody></table>
+			</td>
+		</tr>
+	</tbody></table>
+</div>
+<p class="small">&nbsp;<table border="0" cellpadding="4" style="border-collapse: collapse" width="100%">
+	<tbody><tr>
+		<td class="round_top">
+		<div class="sb1">
+			<h2><a name="P1"></a>Algorytm całkowania metodą Monte Carlo</h2></div>
+		</td>
+	</tr>
+	<tr>
+		<td class="round_bottom"><div class="bl1">
+	<p>Aby zrozumieć zasadę <span class="b">metody Monte Carlo</span> wyobraźcie sobie, iż chcecie 
+		wyznaczyć pole koła wpisanego w kwadrat o boku równym 2 
+		<span class="rem">(pole to co do 
+		wartości jest równe liczbie pi, ale na razie udajmy, że o tym nie 
+		wiemy).</span> W tym celu wyznaczamy wewnątrz kwadratu dużo losowych punktów. 
+		Następnie zliczamy te punkty, które wpadają do wnętrza koła. Pole koła 
+		jest w przybliżeniu równe:</p>
+	<p align="justify" class="bl1">&nbsp;</p>
+	<p align="justify" class="bl1"><img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img47.gif"></p>
+	<p align="justify" class="bl1">
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img49.gif" style="vertical-align: middle">&nbsp;-&nbsp;pole koła</p>
+	<p align="justify" class="bl1">
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img4B.gif" style="vertical-align: middle">&nbsp;- pole kwadratu</p>
+	<p align="justify" class="bl1">
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img4D.gif" style="vertical-align: middle">&nbsp;- liczba punktów w kole</p>
+	<p align="justify" class="bl1">
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img4F.gif" style="height: 15px; width: 14px; vertical-align: middle">&nbsp;- liczba 
+		wszystkich punktów</p>
+	<p>&nbsp;</p><p><b>Przykład:</b></p>
+	<p class="sb1">Oto odpowiedni skrypt &nbsp;<span class="b">JavaScript</span> symulujący obliczanie 
+		powierzchni koła dla podanego przykładu:</p>
+	<p class="bl2">&nbsp;</p>
+	<div align="center">
+					<table border="0" cellpadding="4" style="border-collapse: collapse">
+						<tbody><tr>
+							<td class="listing_top" style="text-align: center">
+							<b>JavaScript</b></td>
+						</tr>
+						<tr>
+							<td class="listing">
+							<pre id="jsc0"><pre>&lt;<span class="v">html</span>&gt;
+&lt;<span class="v">head</span>&gt;
+  &lt;<span class="v">title</span>&gt;<span class="v">Wyznaczanie</span> <span class="v">liczby</span> <span class="v">PI</span> <span class="v">metod</span>ą <span class="v">Monte</span> <span class="v">Carlo</span>&lt;/<span class="v">title</span>&gt;
+&lt;/<span class="v">head</span>&gt;
+&lt;<span class="v">body</span>&gt;
+&lt;<span class="v">script</span> <span class="v">language</span>=<span class="t">"javascript"</span>&gt;
+
+<span class="c">//***************************************</span>
+<span class="c">//** Przykładowa aplikacja obliczająca **</span>
+<span class="c">//**   pole koła wpisanego w kwadrat   **</span>
+<span class="c">//**   za pomocą metody  Monte Carlo   **</span>
+<span class="c">//**-----------------------------------**</span>
+<span class="c">//**  (C)2004 mgr Jerzy Wałaszek I LO  **</span>
+<span class="c">//***************************************</span>
+
+<span class="i">function</span> <span class="v">js_p</span>()
+{
+  <span class="i">var</span> <span class="v">n</span> = <span class="v">parseInt</span>(<span class="v">document</span>.<span class="v">frm_pi</span>.<span class="v">inp_n</span>.<span class="v">value</span>);
+  <span class="i">var</span> <span class="v">nk</span>,<span class="v">s</span>,<span class="v">x</span>,<span class="v">y</span>,<span class="v">i</span>;
+
+  <span class="i">if</span>(<span class="v">isNaN</span>(<span class="v">n</span>) || (<span class="v">n</span> &lt; <span class="n">2</span>))
+  <span class="v">s</span> = <span class="t">"&lt;font color=red&gt;&lt;b&gt;Popraw dane&lt;/b&gt;&lt;/font&gt;"</span>;
+  <span class="i">else</span>
+  {
+    <span class="v">nk</span> = <span class="n">0</span>;
+    <span class="i">for</span>(<span class="v">i</span> = <span class="n">1</span>; <span class="v">i</span> &lt;= <span class="v">n</span>; <span class="v">i</span> ++)
+    {
+      <span class="v">x</span> = <span class="v">Math</span>.<span class="v">random</span>() * <span class="n">2</span>; <span class="v">y</span> = <span class="v">Math</span>.<span class="v">random</span>() * <span class="n">2</span>;
+      <span class="i">if</span>(<span class="v">Math</span>.<span class="v">sqrt</span>((<span class="v">x</span>-<span class="n">1</span>)*(<span class="v">x</span>-<span class="n">1</span>) + (<span class="v">y</span>-<span class="n">1</span>)*(<span class="v">y</span>-<span class="n">1</span>)) &lt;= <span class="n">1</span>) <span class="v">nk</span>++;
+    };
+    <span class="v">s</span> = <span class="n">4</span> * <span class="v">nk</span> / <span class="v">n</span>;
+    <span class="v">s</span> = <span class="v">Math</span>.<span class="v">round</span>(<span class="v">s</span> * <span class="n">100000</span>) / <span class="n">100000</span>;
+  };
+  <span class="v">document</span>.<span class="v">getElementById</span>(<span class="t">"pole"</span>).<span class="v">innerHTML</span> = <span class="v">s</span>;
+}
+
+&lt;/<span class="v">script</span>&gt;
+
+&lt;<span class="v">form</span> <span class="v">method</span>=<span class="t">"POST"</span>
+      <span class="v">name</span>=<span class="t">"frm_pi"</span>
+      <span class="v">style</span>=<span class="t">"border: 2px solid #FFCC66;
+             padding-left: 4px;
+             padding-right: 4px;
+             padding-top: 1px;
+             padding-bottom: 1px;
+             background-color: #FFFFCC"</span>&gt;
+  &lt;<span class="v">h3</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+    <span class="v">Obliczanie</span> <span class="v">pola</span> <span class="v">ko</span>ł<span class="v">a</span> <span class="v">wpisanego</span> <span class="v">w</span> <span class="v">kwadrat</span> <span class="v">o</span> <span class="v">boku</span> <span class="n">2</span>&lt;<span class="v">br</span>&gt;
+    <span class="v">za</span> <span class="v">pomoc</span>ą <span class="v">metody</span> <span class="v">Monte</span> <span class="v">Carlo</span>
+  &lt;/<span class="v">h3</span>&gt;
+  &lt;<span class="v">hr</span>&gt;
+  &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+    (<span class="v">C</span>)<span class="n">2004</span> <span class="v">mgr</span> <span class="v">Jerzy</span> <span class="v">Wa</span>ł<span class="v">aszek</span>&amp;<span class="v">nbsp</span>; <span class="v">I</span> <span class="v">LO</span> <span class="v">w</span> <span class="v">Tarnowie</span>
+  &lt;/<span class="v">p</span>&gt;
+  &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+    <span class="v">Podaj</span> <span class="v">liczb</span>ę <span class="v">punkt</span>ó<span class="v">w</span> <span class="i">do</span> <span class="v">wygenerowania</span> = 
+    &lt;<span class="v">input</span> <span class="v">type</span>=<span class="t">"text"</span> <span class="v">name</span>=<span class="t">"inp_n"</span> <span class="v">size</span>=<span class="t">"20"</span> <span class="v">value</span>=<span class="t">"10000"</span>&gt;
+  &lt;/<span class="v">p</span>&gt;
+  &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+    &lt;<span class="v">input</span> <span class="v">onclick</span>=<span class="t">"js_p();"</span> <span class="v">type</span>=<span class="t">"button"</span> 
+           <span class="v">value</span>=<span class="t">"Oblicz pole koła"</span> <span class="v">name</span>=<span class="t">"B1"</span>&gt;
+  &lt;/<span class="v">p</span>&gt;
+  &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+    <span class="v">Pole</span> <span class="v">ko</span>ł<span class="v">a</span> <span class="v">wynosi</span> : &lt;<span class="v">span</span> <span class="v">id</span>=<span class="t">"pole"</span>&gt;...&lt;/<span class="v">span</span>&gt;
+  &lt;/<span class="v">p</span>&gt;
+&lt;/<span class="v">form</span>&gt;
+&lt;/<span class="v">body</span>&gt;
+&lt;/<span class="v">html</span>&gt; </pre></pre></td>
+						</tr>
+					</tbody></table>
+					</div>
+	<p class="bl2"><br></p>
+	<form name="frm_pi" class="round_note">
+		<div align="center">
+			<h3 style="text-align: center;">Obliczanie pola koła wpisanego w 
+			kwadrat o boku 2<br>za pomocą metody Monte Carlo</h3><hr>
+			<p style="text-align: center;">(C)2004 mgr Jerzy Wałaszek&nbsp; I LO 
+			w Tarnowie</p>
+			<p style="text-align: center;">Podaj liczbę punktów do wygenerowania 
+			= 
+			<input name="inp_n" size="20" value="10000" type="text" style="text-align: right"></p>
+			<p style="text-align: center;">
+			<input onclick="js_p();" value="Oblicz pole koła" name="B1" type="button"><br>
+			</p>
+			<p style="text-align: center;">Pole koła wynosi : <span id="pole">...</span></p>
+		</div>
+	</form>
+
+<script language="javascript">
+
+//***************************************
+//** Przykładowa aplikacja obliczająca **
+//**   pole koła wpisanego w kwadrat   **
+//**   za pomocą metody  Monte Carlo   **
+//**-----------------------------------**
+//**  (C)2004 mgr Jerzy Wałaszek I LO  **
+//***************************************
+
+function js_p()
+{
+  var n = parseInt(document.frm_pi.inp_n.value);
+  var nk,s,x,y,i;
+
+  if(isNaN(n) || (n < 2))
+  s = "<font color=red><b>Popraw dane</b></font>";
+  else
+  {
+    nk = 0;
+    for(i = 1; i <= n; i ++)
+    {
+      x = Math.random() * 2; y = Math.random() * 2;
+      if(Math.sqrt((x-1)*(x-1) + (y-1)*(y-1)) <= 1) nk++;
+    };
+    s = 4 * nk / n;
+    s = Math.round(s * 100000) / 100000;
+  };
+  document.getElementById("pole").innerHTML = s;
+}
+
+</script>
+	<p>&nbsp;</p>
+	<p>Oczywiście wynik jest bliski liczbie <span class="f">
+	<font face="Courier New"><nobr>&#960;</nobr></font> = 
+	<span style="font-style: normal;">3,1415926535</span></span><i>...</i> dopiero dla dużych wartości
+		<span class="f">n</span>. Zaczynają wtedy obowiązywać prawa
+		<span class="b">dużych liczb</span> i pomimo przypadkowości wyboru 
+		punktów, pojawia się prawidłowość. Ponieważ punkty rozkładają się 
+		równomiernie w obrębie pola kwadratu, to stosunek liczby punktów 
+		wewnątrz koła do liczby wszystkich punktów w kwadracie jest równy 
+		stosunkowi pola koła do pola kwadratu. Stąd właśnie pochodzi nasz wzór:</p>
+	<p class="bl1">&nbsp;</p>
+	<p class="sb1"><img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img47.gif"></p><p>&nbsp;</p><p>Wzór ten jest podstawą wyznaczania wartości całki oznaczonej za 
+		pomocą metody Monte Carlo, czyli losowania punktów. Zasada jest 
+		następująca:</p>
+	<p>Dla danej funkcji <span class="f">f<span style="font-style: normal;">(</span>x<span style="font-style: normal;">)</span></span>, której całkę oznaczoną 
+		chcemy obliczyć w przedziale całkowania <span class="f"><nobr>&lt;x<sub>p</sub>,x<sub>k</sub>&gt;</nobr></span>, 
+		wyznaczamy prostokąt obejmujący pole pod wykresem tej funkcji o 
+		wysokości <span class="f">h</span> i długości podstawy <nobr>(<span class="f">x<sub>k</sub> 
+		- x<sub>p</sub></span>)</nobr>. W dalszej kolejności losujemy 
+	<span class="f">n</span> 
+		punktów i zliczamy te punkty <span class="f">n<sub>w</sub></span>, które 
+		wpadają w pole pod wykresem funkcji. Wartość całki wyraża się wzorem 
+		przybliżonym:</p>
+	<p class="bl1">&nbsp;</p>
+	<p class="sb1"><img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img51.gif">&nbsp;</p>
+	<p style="text-align: center;">&nbsp;</p>
+	<p>Otrzymany wzór ma kilka wad. Na przykład w ogólnym przypadku trudno 
+		wyznaczyć wysokość <span class="f">h</span>. Również kłopoty pojawiają 
+		się, gdy funkcja zmienia znak w przedziale całkowania. Dlatego częściej 
+		jako metodę Monte Carlo przyjmuje się metodę, która wyznacza średnią z 
+		wartości funkcji w przedziale całkowania na podstawie serii losowo 
+		wybranych współrzędnych <span class="f">x</span>. Następnie średnia ta 
+		jest mnożona przez długość przedziału całkowania i otrzymujemy 
+		przybliżoną wartość całki oznaczonej. Wzór ma następującą postać:</p>
+	<p class="bl1">&nbsp;</p>
+	<p class="sb1"><img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img53.gif">&nbsp;</p>
+	<p style="text-align: center;">&nbsp;</p>
+	<p><span class="f">x<sub>los</sub></span> jest wartością pseudolosową 
+		zmiennoprzecinkową z przedziału <span class="f"><nobr>&lt;x<sub>p</sub>,<span lang="en">&nbsp;</span>x<sub>k</sub>&gt;</nobr></span> 
+		Wartość tę otrzymujemy wg wzorów:</p>
+	<p class="bl1">&nbsp;</p>
+	<div align="center">
+		<table style="border-collapse: collapse;" id="table44" border="1" cellpadding="4">
+			<tbody><tr>
+				<th bgcolor="#CCCCCC">Język</th>
+				<th bgcolor="#CCCCCC">Instrukcja</th>
+			</tr>
+			<tr>
+				<td bgcolor="#F0F0F0">Pascal</td>
+				<td>
+				<pre><span class="v">xlos</span> := <span class="v">xp</span> + random * (<span class="v">xk</span> - <span class="v">xp</span>);</pre>
+				</td>
+			</tr>
+			<tr>
+				<td bgcolor="#F0F0F0">C++</td>
+				<td>
+				<pre><span class="v">xlos</span>  = <span class="v">xp</span> + (<span class="i">double</span>)rand()/(<span class="i">double</span>)(RAND_MAX+<span class="n">1</span>) * (<span class="v">xk</span> - <span class="v">xp</span>);</pre>
+				</td>
+			</tr>
+			<tr>
+				<td bgcolor="#F0F0F0">Basic</td>
+				<td>
+				<pre><span class="v">xlos</span>  = <span class="v">xp</span> + <span class="i">rnd</span>(<span class="n">1</span>) * (<span class="v">xk</span> - <span class="v">xp</span>)</pre>
+				</td>
+			</tr>
+			<tr>
+				<td bgcolor="#F0F0F0">JavaScript</td>
+				<td>
+				<pre><span class="v">xlos</span>  = <span class="v">xp</span> + <span class="v">Math</span>.random() * (<span class="v">xk</span> - <span class="v">xp</span>)</pre>
+				</td>
+			</tr>
+		</tbody></table></div>
+<p>&nbsp;</p>
+<h2>
+		Specyfikacja problemu</h2>
+	<h4 class="bl1">Dane wejściowe</h4>
+	<p class="sb2"><i>x</i><sub>p&nbsp;</sub>-&nbsp;początek przedziału całkowania,<br>
+	<img src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img21.gif"></p>
+	<p class="sb2"><i>x</i><sub>k&nbsp;</sub>-&nbsp;koniec przedziału całkowania,<br>
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img23.gif"></p>
+	<p class="sb2"><i>n&nbsp;</i>-&nbsp;liczba punktów losowych,<br>
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img25.gif"></p>
+	<p class="sb2">f(<i>x</i>)&nbsp;-&nbsp;funkcja rzeczywista, której całkę liczymy</p>
+	<h4 class="bl1">Dane wyjściowe</h4>
+	<p class="bl2"><i>s</i>&nbsp;-&nbsp;wartość całki oznaczonej funkcji f(<i>x</i>) 
+	w przedziale &lt;<i>x</i><sub>p</sub>,<i>x</i><sub>k</sub>&gt;.<br>
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img27.gif"></p>
+	<h4 class="bl1">Zmienne pomocnicze</h4>
+	<p class="sb2"><i>dx </i>-&nbsp;długość przedziału całkowania,<br>
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img29.gif"></p>
+	<p class="sb2"><i>i&nbsp;</i>-&nbsp;licznik punktów podziałowych,<br>
+	<img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img2B.gif"></p>
+	<p class="sb2"><i>x</i><sub>los&nbsp;</sub>-&nbsp;punkt wybrany losowo z przedziału 
+	całkowania,<br><img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img55.gif"></p>
+	<p>&nbsp;</p>
+	<h2>Lista kroków</h2>
+<p class="sb1"><img alt="" src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/img57.gif"></p>
+<h2>
+Schemat blokowy</h2>
+			<p style="text-align: center">
+			<img src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/005_04.gif" border="0" height="413" width="264" alt="flow"></p>
+			<p>Obliczenia rozpoczynamy od pobrania informacji o przedziale całkowania 
+	oraz o ilości punktów losowych, które należy wygenerować w celu obliczenia 
+	wartości średniej funkcji w tym przedziale. Dokładność metody rośnie wraz ze 
+	wzrostem <span class="f">n</span>.</p>
+			<p>W zmiennej <span class="f">s</span> będziemy obliczać sumy wartości 
+	funkcji. Zmienna ta posłuży później do wyliczenia średniej oraz samej całki 
+	oznaczonej. Na początku obliczeń ustawiamy ją na 0. W zmiennej
+			<span class="f">dx</span> zapamiętujemy szerokość przedziału całkowania. 
+	Wartość ta jest wykorzystywana zwykle przy generacji liczby losowej oraz na 
+	końcu przy obliczeniu wartości całki.</p>
+			<p>Rozpoczynamy pętlę iteracyjną kontrolowaną przez zmienną 
+			<span class="f">i</span>. Pętla ta wykona się <span class="f">n</span>-razy. Wewnątrz pętli 
+	generujemy liczbę pseudolosową <span class="f"><nobr>x<sub>los</sub></nobr></span> 
+	leżącą w przedziale <span class="f"><nobr>&lt;x<sub>p</sub>.x<sub>k</sub>&gt;</nobr></span>. 
+	Metoda generacji zależy od wybranego języka programowania, który udostępnia 
+	odpowiednie funkcje pseudolosowe. Właściwe procedury generacji tej liczby 
+	podaliśmy wyżej w tabelce. Po wyznaczeniu liczby pseudolosowej
+			<span class="f"><nobr>x<sub>los</sub></nobr></span> obliczamy wartość funkcji w tym 
+	punkcie i dodajemy ją do sumy <span class="f">s</span>. Gdy pętla się 
+	zakończy, wyliczamy średnią wartość funkcji w przedziale całkowania, mnożymy 
+	ją przez długość tego przedziału i otrzymujemy przybliżoną wartość całki 
+	oznaczonej. Wypisujemy wyniki i kończymy algorytm.</p></div></td>
+	</tr>
+</tbody></table>
+</p><p>&nbsp;</p>
+<table border="0" cellpadding="4" style="border-collapse: collapse" width="100%">
+	<tbody><tr>
+		<td class="round_top">
+		<div class="sb1">
+			<h2><a name="P2"></a>Przykładowe programy dla metody Monte Carlo</h2></div>
+		</td>
+	</tr>
+	<tr>
+		<td class="round_bottom"><div class="bl1">W przedziale <span class="f">
+    <span style="font-style: normal;"><nobr>&lt;0,1&gt;</nobr></span></span> całka 
+    funkcji <span class="f"><nobr>f<span style="font-style: normal;">(</span>x<span style="font-style: normal;">)</span> 
+    = x<span style="font-style: normal;"><sup>2</sup></span> +
+    <span style="font-style: normal;">2</span>x</nobr></span> ma dokładną 
+    wartość <span class="f"><span style="font-style: normal;">1.333...</span></span> 
+    W naszym programie liczymy <span class="f"><nobr>n=<span style="font-style: normal;">10000</span></nobr></span> 
+    losowych punktów.<div align="center">&nbsp;<table style="border-collapse: collapse;" cellpadding="4" cellspacing="0">
+						<tbody><tr>
+							<td class="program">Obliczanie&nbsp; całki oznaczonej<br>&nbsp;za pomocą&nbsp; metody Simpsona<br>----------------------------<br>(C)2006 mgr J.Wałaszek&nbsp; I LO<br>
+							<br>f(x) = x * x + 2 * x<br><br>Podaj początek przedziału całkowania<br>
+							<br>xp = 0<br><br>Podaj koniec przedziału całkowania<br>
+							<br>xk = 1<br><br>Wartość całki wynosi :&nbsp;&nbsp;&nbsp; 1,333<br>
+							<br>KONIEC. Naciśnij dowolny klawisz...</td>
+						</tr>
+					</tbody></table>
+					<p>&nbsp;</p>
+					<table border="0" cellpadding="4" style="border-collapse: collapse">
+						<tbody><tr>
+							<td class="listing_top" style="text-align: center">
+							<b>Pascal</b></td>
+						</tr>
+						<tr>
+							<td class="listing">
+      <pre id="pas1"><pre><span class="c">//****************************************************</span>
+<span class="c">//** Obliczanie całki oznaczonej metodą Monte Carlo **</span>
+<span class="c">//** ---------------------------------------------- **</span>
+<span class="c">//**  (C)2004 mgr Jerzy Wałaszek   I LO w Tarnowie  **</span>
+<span class="c">//****************************************************</span>
+
+<span class="i">program</span> <span class="v">int_montecarlo</span>;
+
+<span class="c">//*******************************</span>
+<span class="c">//** Tutaj definiujemy funkcję **</span>
+<span class="c">//*******************************</span>
+
+<span class="i">function</span> <span class="v">f</span>(<span class="v">x</span> : <span class="v">double</span>) : <span class="v">double</span>;
+<span class="i">begin</span>
+  <span class="v">f</span> := <span class="v">x</span> * <span class="v">x</span> + <span class="n">2</span> * <span class="v">x</span>;
+<span class="i">end</span>;
+
+<span class="c">//********************</span>
+<span class="c">//** Program główny **</span>
+<span class="c">//********************</span>
+
+<span class="i">const</span> <span class="v">N</span> = <span class="n">10000</span>; <span class="c">//liczba punktów losowych</span>
+<span class="i">var</span>
+  <span class="v">xp</span>,<span class="v">xk</span>,<span class="v">s</span>,<span class="v">dx</span> : <span class="v">double</span>;
+  <span class="v">i</span> : <span class="v">integer</span>;
+
+<span class="i">begin</span>
+  <span class="v">writeln</span>(<span class="t">'Obliczanie calki oznaczonej'</span>);
+  <span class="v">writeln</span>(<span class="t">'    Metoda Monte Carlo'</span>);
+  <span class="v">writeln</span>(<span class="t">'---------------------------'</span>);
+  <span class="v">writeln</span>(<span class="t">'(C)2004 mgr J.Walaszek I LO'</span>);
+  <span class="v">writeln</span>;
+  <span class="v">writeln</span>(<span class="t">'f(x) = x * x + 2 * x'</span>);
+  <span class="v">writeln</span>;
+  <span class="v">writeln</span>(<span class="t">'Podaj poczatek przedzialu calkowania'</span>);
+  <span class="v">writeln</span>;
+  <span class="v">write</span>(<span class="t">'xp = '</span>); <span class="v">readln</span>(<span class="v">xp</span>);
+  <span class="v">writeln</span>;
+  <span class="v">writeln</span>(<span class="t">'Podaj koniec przedzialu calkowania'</span>);
+  <span class="v">writeln</span>;
+  <span class="v">write</span>(<span class="t">'xk = '</span>); <span class="v">readln</span>(<span class="v">xk</span>);
+  <span class="v">writeln</span>;
+  <span class="v">randomize</span>; <span class="c">//inicjujemy generator liczb pseudolosowych</span>
+  <span class="v">s</span>  := <span class="n">0</span>;
+  <span class="v">dx</span> := <span class="v">xk</span> - <span class="v">xp</span>;
+  <span class="i">for</span> <span class="v">i</span> := <span class="n">1</span> <span class="i">to</span> <span class="v">N</span> <span class="i">do</span> <span class="v">s</span> := <span class="v">s</span> + <span class="v">f</span>(<span class="v">xp</span> + <span class="v">random</span> * <span class="v">dx</span>);
+  <span class="v">s</span> := <span class="v">dx</span> * <span class="v">s</span> / <span class="v">N</span>;
+  <span class="v">writeln</span>(<span class="t">'Wartosc calki wynosi : '</span>,<span class="v">s</span>:<span class="n">8</span>:<span class="n">3</span>);
+  <span class="v">writeln</span>;
+  <span class="v">writeln</span>(<span class="t">'Nacisnij klawisz Enter...'</span>);
+  <span class="v">readln</span>;
+<span class="i">end</span>. </pre></pre></td>
+						</tr>
+					</tbody></table>
+					<p>&nbsp;</p>
+					<table border="0" cellpadding="4" style="border-collapse: collapse">
+						<tbody><tr>
+							<td class="listing_top" style="text-align: center">
+							<b>C++</b></td>
+						</tr>
+						<tr>
+							<td class="listing">
+      <pre id="cpp1"><pre><span class="c">//****************************************************</span>
+<span class="c">//** Obliczanie całki oznaczonej metodą Monte Carlo **</span>
+<span class="c">//** ---------------------------------------------- **</span>
+<span class="c">//**  (C)2004 mgr Jerzy Wałaszek   I LO w Tarnowie  **</span>
+<span class="c">//****************************************************</span>
+
+<span class="pp">#include &lt;iomanip&gt;</span>
+<span class="pp">#include &lt;iostream&gt;</span>
+<span class="pp">#include &lt;cstdlib&gt;</span>
+<span class="pp">#include &lt;time.h&gt;</span>
+
+<span class="i">using</span> <span class="i">namespace</span> <span class="v">std</span>;
+
+<span class="c">//*******************************</span>
+<span class="c">//** Tutaj definiujemy funkcję **</span>
+<span class="c">//*******************************</span>
+
+<span class="i">double</span> <span class="v">f</span>(<span class="i">double</span> <span class="v">x</span>)
+{
+  <span class="i">return</span>(<span class="v">x</span> * <span class="v">x</span> + <span class="n">2</span> * <span class="v">x</span>);
+}
+
+<span class="c">//********************</span>
+<span class="c">//** Program główny **</span>
+<span class="c">//********************</span>
+
+<span class="i">int</span> <span class="v">main</span>()
+{
+  <span class="i">const</span> <span class="i">int</span> <span class="v">N</span> = <span class="n">10000</span>; <span class="c">//liczba punktów losowych</span>
+  <span class="i">double</span> <span class="v">xp</span>,<span class="v">xk</span>,<span class="v">s</span>,<span class="v">dx</span>;
+  <span class="i">int</span> <span class="v">i</span>;
+
+  <span class="v">cout</span> &lt;&lt; <span class="v">setprecision</span>(<span class="n">3</span>)      <span class="c">// 3 cyfry po przecinku</span>
+       &lt;&lt; <span class="v">fixed</span>;               <span class="c">// format stałoprzecinkowy</span>
+
+  <span class="v">cout</span> &lt;&lt; <span class="t">"Obliczanie calki oznaczonej\n"</span>
+          <span class="t">"    Metoda Monte Carlo\n"</span>
+          <span class="t">"---------------------------\n"</span>
+          <span class="t">"(C)2004 mgr J.Walaszek  I LO\n\n"</span>
+          <span class="t">"f(x) = x * x + 2 * x\n\n"</span>
+          <span class="t">"Podaj poczatek przedzialu calkowania\n\n"</span>
+          <span class="t">"xp = "</span>;
+  <span class="v">cin</span> &gt;&gt; <span class="v">xp</span>;
+  <span class="v">cout</span> &lt;&lt; <span class="t">"\nPodaj koniec przedzialu calkowania\n\n"</span>
+          <span class="t">"xk = "</span>;
+  <span class="v">cin</span> &gt;&gt; <span class="v">xk</span>;
+  <span class="v">cout</span> &lt;&lt; <span class="v">endl</span>;
+  <span class="v">srand</span>(<span class="v">time</span>(<span class="v">NULL</span>));
+  <span class="v">s</span>  = <span class="n">0</span>;
+  <span class="v">dx</span> = <span class="v">xk</span> - <span class="v">xp</span>;
+  <span class="i">for</span>(<span class="v">i</span> = <span class="n">1</span>; <span class="v">i</span> &lt;= <span class="v">N</span>; <span class="v">i</span>++)
+    <span class="v">s</span> += <span class="v">f</span>(<span class="v">xp</span>+((<span class="i">double</span>)<span class="v">rand</span>()/(<span class="i">double</span>)(<span class="v">RAND_MAX</span>+<span class="n">1</span>)*<span class="v">dx</span>));
+  <span class="v">s</span> = <span class="v">dx</span> * <span class="v">s</span> / <span class="v">N</span>;
+  <span class="v">cout</span> &lt;&lt; <span class="t">"Wartosc calki wynosi : "</span> &lt;&lt; <span class="v">setw</span>(<span class="n">8</span>) &lt;&lt; <span class="v">s</span>
+       &lt;&lt; <span class="v">endl</span> &lt;&lt; <span class="v">endl</span>;
+  <span class="v">system</span>(<span class="t">"pause"</span>);
+  <span class="i">return</span> <span class="n">0</span>;
+} </pre></pre></td>
+						</tr>
+					</tbody></table>
+					<p>&nbsp;</p>
+					<table border="0" cellpadding="4" style="border-collapse: collapse">
+						<tbody><tr>
+							<td class="listing_top" style="text-align: center">
+							<b>Basic</b></td>
+						</tr>
+						<tr>
+							<td class="listing">
+      <pre id="bas1"><pre><span class="c">'****************************************************</span>
+<span class="c">'** Obliczanie całki oznaczonej metodą Monte Carlo **</span>
+<span class="c">'** ---------------------------------------------- **</span>
+<span class="c">'**  (C)2004 mgr Jerzy Wałaszek  I LO w Tarnowie   **</span>
+<span class="c">'****************************************************</span>
+
+<span class="i">Declare</span> <span class="i">Function</span> <span class="v">f</span>(<span class="v">x</span> <span class="i">As</span> <span class="i">Double</span>) <span class="i">As</span> <span class="i">Double</span>
+
+<span class="c">'********************</span>
+<span class="c">'** Program główny **</span>
+<span class="c">'********************</span>
+
+<span class="i">Const</span> <span class="v">N</span> = <span class="n">10000</span> <span class="c">'liczba punktów losowych</span>
+
+<span class="i">Dim</span> <span class="i">As</span> <span class="i">Double</span> <span class="v">xp</span>,<span class="v">xk</span>,<span class="v">s</span>,<span class="v">dx</span>
+<span class="i">Dim</span> <span class="i">As</span> <span class="i">Integer</span> <span class="v">i</span>
+
+<span class="i">Print</span> <span class="t">"Obliczanie  calki oznaczonej"</span>
+<span class="i">Print</span> <span class="t">"za pomoca metody Monte Carlo"</span>
+<span class="i">Print</span> <span class="t">"----------------------------"</span>
+<span class="i">Print</span> <span class="t">"(C)2004 mgr J.Walaszek  I LO"</span>
+<span class="i">Print</span>
+<span class="i">Print</span> <span class="t">"f(x) = x * x + 2 * x"</span>
+<span class="i">Print</span>
+<span class="i">Print</span> <span class="t">"Podaj poczatek przedzialu calkowania"</span>
+<span class="i">Print</span>
+<span class="i">Input</span> <span class="t">"xp = "</span>, <span class="v">xp</span>
+<span class="i">Print</span>
+<span class="i">Print</span> <span class="t">"Podaj koniec przedzialu calkowania"</span>
+<span class="i">Print</span>
+<span class="i">Input</span> <span class="t">"xk = "</span>, <span class="v">xk</span>
+<span class="i">Print</span>
+<span class="i">Randomize</span>
+<span class="v">s</span> = <span class="n">0</span>
+<span class="v">dx</span> = <span class="v">xk</span> - <span class="v">xp</span>
+<span class="i">For</span> <span class="v">i</span> = <span class="n">1</span> <span class="i">To</span> <span class="v">N</span> : <span class="v">s</span> += <span class="v">f</span>(<span class="v">xp</span> + <span class="i">Rnd</span>() * <span class="v">dx</span>) : <span class="i">Next</span>
+<span class="v">s</span> *= <span class="v">dx</span> / <span class="v">N</span>
+<span class="i">Print</span> <span class="i">Using</span> <span class="t">"Wartosc calki wynosi : #####.###"</span>;<span class="v">s</span>
+<span class="i">Print</span>
+<span class="i">Print</span> <span class="t">"Nacisnij klawisz Enter..."</span>
+<span class="i">Sleep</span>
+<span class="i">End</span>
+
+<span class="c">'*******************************</span>
+<span class="c">'** Tutaj definiujemy funkcję **</span>
+<span class="c">'*******************************</span>
+
+<span class="i">Function</span> <span class="v">f</span>(<span class="v">x</span> <span class="i">As</span> <span class="i">Double</span>) <span class="i">As</span> <span class="i">Double</span>
+  <span class="v">f</span> = <span class="v">x</span> * <span class="v">x</span> + <span class="n">2</span> * <span class="v">x</span>
+<span class="i">End</span> <span class="i">Function</span> </pre></pre>
+							</td>
+						</tr>
+					</tbody></table>
+					<p>&nbsp;</p>
+					<table border="0" cellpadding="4" style="border-collapse: collapse">
+						<tbody><tr>
+							<td class="listing_top" style="text-align: center">
+							<b>JavaScript</b></td>
+						</tr>
+						<tr>
+							<td class="listing">
+      <pre id="jsc1"><pre>&lt;<span class="v">html</span>&gt;
+  &lt;<span class="v">head</span>&gt;
+    &lt;<span class="v">title</span>&gt;<span class="v">Ca</span>ł<span class="v">kowanie</span> <span class="v">numeryczne</span> <span class="v">metod</span>ą <span class="v">Monte</span> <span class="v">Carlo</span>&lt;/<span class="v">title</span>&gt;
+  &lt;/<span class="v">head</span>&gt;
+  &lt;<span class="v">body</span>&gt;
+&lt;<span class="v">script</span> <span class="v">language</span>=<span class="t">"JavaScript"</span>&gt;
+
+<span class="c">//****************************************************</span>
+<span class="c">//** Obliczanie całki oznaczonej metodą Monte Carlo **</span>
+<span class="c">//** ---------------------------------------------- **</span>
+<span class="c">//**  (C)2004 mgr Jerzy Wałaszek   I LO w Tarnowie  **</span>
+<span class="c">//****************************************************</span>
+
+<span class="c">//*******************************</span>
+<span class="c">//** Tutaj definiujemy funkcję **</span>
+<span class="c">//*******************************</span>
+
+<span class="i">function</span> <span class="v">f</span>(<span class="v">x</span>)
+{
+  <span class="i">return</span>(<span class="v">x</span> * <span class="v">x</span> + <span class="n">2</span> * <span class="v">x</span>);
+}
+
+<span class="i">function</span> <span class="v">js_montecarlo</span>()
+{
+  <span class="i">var</span> <span class="v">N</span> = <span class="n">10000</span>; <span class="c">//liczba punktów losowych</span>
+  <span class="i">var</span> <span class="v">xp</span>,<span class="v">xk</span>,<span class="v">s</span>,<span class="v">dx</span>,<span class="v">i</span>,<span class="v">t</span>;
+
+  <span class="v">xp</span> = <span class="v">parseFloat</span>(<span class="v">document</span>.<span class="v">frm_montecarlo</span>.<span class="v">xp_inp</span>.<span class="v">value</span>);
+  <span class="v">xk</span> = <span class="v">parseFloat</span>(<span class="v">document</span>.<span class="v">frm_montecarlo</span>.<span class="v">xk_inp</span>.<span class="v">value</span>);
+  <span class="i">if</span>(<span class="v">isNaN</span>(<span class="v">xp</span>) || <span class="v">isNaN</span>(<span class="v">xk</span>))
+    <span class="v">t</span> = <span class="t">"&lt;font color=red&gt;&lt;b&gt;Popraw dane wejściowe!&lt;/b&gt;&lt;/font&gt;"</span>;
+  <span class="i">else</span>
+  {
+    <span class="v">s</span>  = <span class="n">0</span>;
+    <span class="v">dx</span> = <span class="v">xk</span> - <span class="v">xp</span>;
+    <span class="i">for</span>(<span class="v">i</span> = <span class="n">1</span>; <span class="v">i</span> &lt;= <span class="v">N</span>; <span class="v">i</span>++) <span class="v">s</span> += <span class="v">f</span>(<span class="v">xp</span> + <span class="v">Math</span>.<span class="v">random</span>() * <span class="v">dx</span>);
+    <span class="v">s</span> = <span class="v">dx</span> * <span class="v">s</span> / <span class="v">N</span>;
+    <span class="v">t</span> = <span class="v">Math</span>.<span class="v">floor</span>(<span class="v">s</span> * <span class="n">1000</span>) / <span class="n">1000</span>;
+  };
+  <span class="v">document</span>.<span class="v">getElementById</span>(<span class="t">"t_out"</span>).<span class="v">innerHTML</span> = <span class="v">t</span>;
+}
+
+&lt;/<span class="v">script</span>&gt;
+
+    &lt;<span class="v">form</span> <span class="v">method</span>=<span class="t">"POST"</span>
+          <span class="v">name</span>=<span class="t">"frm_montecarlo"</span>
+          <span class="v">style</span>=<span class="t">"border: 2px solid #FF9900;
+                 padding-left: 4px;
+                 padding-right: 4px;
+                 padding-top: 1px;
+                 padding-bottom: 1px;
+                 background-color: #FFFFCC"</span>&gt;
+      &lt;<span class="v">h2</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        <span class="v">Obliczanie</span> <span class="v">ca</span>ł<span class="v">ki</span> <span class="v">oznaczonej</span>&lt;<span class="v">br</span>&gt;
+        <span class="v">za</span> <span class="v">pomoc</span>ą <span class="v">metody</span> <span class="v">Monte</span> <span class="v">Carlo</span>
+      &lt;/<span class="v">h2</span>&gt;
+      &lt;<span class="v">hr</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        (<span class="v">C</span>)<span class="n">2004</span> <span class="v">mgr</span> <span class="v">Jerzy</span> <span class="v">Wa</span>ł<span class="v">aszek</span> <span class="v">I</span> <span class="v">LO</span> <span class="v">w</span> <span class="v">Tarnowie</span>
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        <span class="v">Ca</span>ł<span class="v">kowana</span> <span class="v">funkcja</span>:
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        &lt;<span class="v">i</span>&gt;<span class="v">f</span>(<span class="v">x</span>) = <span class="v">x</span>&lt;<span class="v">sup</span>&gt;<span class="n">2</span>&lt;/<span class="v">sup</span>&gt; + <span class="n">2x</span>&lt;/<span class="v">i</span>&gt;
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        <span class="v">Tutaj</span> <span class="v">okre</span>ś<span class="v">l</span> <span class="v">przedzia</span>ł <span class="v">ca</span>ł<span class="v">kowania</span>
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        <span class="v">Pocz</span>ą<span class="v">tek</span> &lt;<span class="v">i</span>&gt;<span class="v">x</span>&lt;<span class="v">sub</span>&gt;<span class="v">p</span>&lt;/<span class="v">sub</span>&gt;&lt;/<span class="v">i</span>&gt; =
+        &lt;<span class="v">input</span> <span class="v">type</span>=<span class="t">"text"</span> <span class="v">name</span>=<span class="t">"xp_inp"</span> <span class="v">size</span>=<span class="t">"20"</span> <span class="v">value</span>=<span class="t">"0"</span>&gt;
+        <span class="v">i</span> <span class="v">koniec</span> &lt;<span class="v">i</span>&gt;<span class="v">x</span>&lt;<span class="v">sub</span>&gt;<span class="v">k</span>&lt;/<span class="v">sub</span>&gt; &lt;/<span class="v">i</span>&gt;=
+        &lt;<span class="v">input</span> <span class="v">type</span>=<span class="t">"text"</span> <span class="v">name</span>=<span class="t">"xk_inp"</span> <span class="v">size</span>=<span class="t">"20"</span> <span class="v">value</span>=<span class="t">"1"</span>&gt;
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        &lt;<span class="v">input</span> <span class="v">onclick</span>=<span class="t">"js_montecarlo();"</span> <span class="v">type</span>=<span class="t">"button"</span>
+               <span class="v">value</span>=<span class="t">"Oblicz całkę"</span> <span class="v">name</span>=<span class="t">"B1"</span>&gt;
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;
+        <span class="v">Warto</span>ść <span class="v">ca</span>ł<span class="v">ki</span> <span class="v">wynosi</span>
+      &lt;/<span class="v">p</span>&gt;
+      &lt;<span class="v">p</span> <span class="v">id</span>=<span class="t">"t_out"</span> <span class="v">style</span>=<span class="t">"text-align: center"</span>&gt;...&lt;/<span class="v">p</span>&gt;
+    &lt;/<span class="v">form</span>&gt;
+  &lt;/<span class="v">body</span>&gt;
+&lt;/<span class="v">html</span>&gt; </pre></pre></td>
+						</tr>
+					</tbody></table></div>
+<p class="bl1" style="text-align: center">A tutaj możesz przetestować w praktyce działanie powyższego skryptu.</p>
+
+<script language="JavaScript">
+
+//****************************************************
+//** Obliczanie całki oznaczonej metodą Monte Carlo **
+//** ---------------------------------------------- **
+//**   (C)2004 mgr Jerzy Wałaszek  I LO w Tarnowie  **
+//****************************************************
+
+//*******************************
+//** Tutaj definiujemy funkcję **
+//*******************************
+
+function f(x)
+{
+  return(x * x + 2 * x);
+}
+
+function js_montecarlo()
+{
+  var N = 10000; //liczba punktów losowych
+  var xp,xk,s,dx,i,t;
+
+  xp = parseFloat(document.frm_montecarlo.xp_inp.value);
+  xk = parseFloat(document.frm_montecarlo.xk_inp.value);
+  if(isNaN(xp) || isNaN(xk))
+    t = "<font color=red><b>Popraw dane wejściowe!</b></font>";
+  else
+  {
+    s  = 0;
+    dx = xk - xp;
+    for(i = 1; i <= N; i++) s += f(xp + Math.random() * dx);
+    s = dx * s / N;
+    t = Math.floor(s * 1000) / 1000;
+  };
+  document.getElementById("t_out").innerHTML = t;
+}
+
+</script>
+
+<form name="frm_montecarlo" class="round_note">
+  <div align="center">
+  <h2 style="text-align: center;">Obliczanie całki oznaczonej<br>za pomocą metody Monte Carlo
+  </h2>
+  <hr>
+  <p style="text-align: center;">(C)2004 mgr Jerzy Wałaszek I LO w Tarnowie
+  </p>
+  <p style="text-align: center;">Całkowana funkcja:
+  </p>
+  <p style="text-align: center;"><i>f(x) = x<sup>2</sup> + 2x</i> </p>
+  <p style="text-align: center;">Tutaj określ przedział całkowania
+  </p>
+  <p style="text-align: center;">Początek <i>x<sub>p</sub></i> =
+    <input name="xp_inp" size="20" value="0" type="text" style="text-align: right"><br>&nbsp;&nbsp;&nbsp; koniec <i>x<sub>k</sub> </i>=
+    <input name="xk_inp" size="20" value="1" type="text" style="text-align: right"> <br>
+	</p>
+  <p style="text-align: center;">
+  <input onclick="js_montecarlo()" value="Oblicz całkę" name="B2" type="button">
+  <br>
+	</p>
+  <p style="text-align: center;">Wartość całki wynosi
+  </p>
+  <p id="t_out" style="text-align: center;">...</p>
+	</div>
+</form>
+		</div></td>
+	</tr>
+</tbody></table>
+<p>&nbsp;</p>
+<form name="frmadminemail" action="http://eduinf.waw.pl/phpscripts/email_admin.php" method="POST" class="round_footer">
+  <input type="hidden" name="adminemail_tytul" value="Całkowanie numeryczne: Metoda Monte Carlo">
+  <div align="center">
+    <table border="0" cellpadding="4" style="border-collapse: collapse">
+      <tbody><tr>
+        <td nowrap="">
+          <div align="center">
+            <h3 style="text-align: center">List do administratora Serwisu Edukacyjnego</h3>
+            <table border="0" cellpadding="4" style="border-collapse: collapse">
+              <tbody><tr>
+                <td align="right" class="small">Twój adres email:</td>
+		<td><input class="respond" type="text" name="adminemail_adres" size="44" onchange="sprawdz_adres()" onkeyup="sprawdz_adres()" onkeypress="sprawdz_adres()"> <span class="t"><span class="small">(jeśli chcesz otrzymać odpowiedź)</span></span></td>
+              </tr>
+              <tr>
+                <td align="right" class="small">Temat listu:</td>
+                <td><input class="respond" type="text" name="adminemail_temat" size="44" onchange="sprawdz_temat()" onkeyup="sprawdz_temat()" onkeypress="sprawdz_temat()"></td>
+              </tr>
+              <tr>
+                <td align="right" class="t"><b>Uwaga:</b></td>
+                <td><input class="respond" type="text" name="adminemail_sp" size="10" onchange="sprawdz_sp()" onkeyup="sprawdz_sp()" onkeypress="sprawdz_sp()"> <b>&#8592; tutaj wpisz wyraz <span style="background-color: #FFFFFF"> &nbsp; <span class="t">ilo</span> &nbsp;</span> , inaczej list zostanie <span class="t">zignorowany</span></b></td>
+              </tr>
+            </tbody></table>
+          </div>
+<p align="right" style="text-align: center"><span class="small">Poniżej wpisz swoje uwagi lub pytania dotyczące tego rozdziału <span class="rem">(max. 2048 znaków)</span>.</span></p>
+<p align="right" style="text-align: center"> <textarea rows="10" name="adminemail_wiadomosc" cols="80" class="respond" onchange="zlicz_znaki()" onkeyup="zlicz_znaki()" onkeypress="zlicz_znaki()"></textarea></p>
+<p align="right" style="text-align: center"><span class="small">Liczba znaków do wykorzystania: <span id="char_count">2048</span></span></p>
+<p align="right" style="text-align: center"><input type="submit" value="   Wyślij   "> <input type="reset" value="   Kasuj   "><input type="hidden" name="feedback" value="/inf/alg/004_int/0005.php"></p></td>
+</tr>
+</tbody></table>
+</div>
+
+<script type="text/javascript">
+function zlicz_znaki()
+{
+   a = 2048-document.frmadminemail.adminemail_wiadomosc.value.length
+   if(a < 0)
+   {
+      wiadomosc = document.frmadminemail.adminemail_wiadomosc.value
+      wiadomosc = wiadomosc.substr(0,2048)
+      document.frmadminemail.adminemail_wiadomosc.value = wiadomosc
+      a = 0
+   }
+   document.getElementById("char_count").innerHTML = a;
+}
+
+function sprawdz_adres()
+{
+   if(document.frmadminemail.adminemail_adres.value.length > 128)
+   {
+      wiadomosc = document.frmadminemail.adminemail_adres.value
+      wiadomosc = wiadomosc.substr(0,128)
+      document.frmadminemail.adminemail_adres.value = wiadomosc
+   }
+}
+
+function sprawdz_temat()
+{
+   if(document.frmadminemail.adminemail_temat.value.length > 256)
+   {
+      wiadomosc = document.frmadminemail.adminemail_temat.value
+      wiadomosc = wiadomosc.substr(0,256)
+      document.frmadminemail.adminemail_temat.value = wiadomosc
+   }
+}
+
+function sprawdz_sp()
+{
+   if(document.frmadminemail.adminemail_sp.value.length > 3)
+   {
+      wiadomosc = document.frmadminemail.adminemail_sp.value
+      wiadomosc = wiadomosc.substr(0,3)
+      document.frmadminemail.adminemail_sp.value = wiadomosc
+   }
+}
+</script>
+</form>
+<div align="left">
+  <table style="float: right; BORDER-COLLAPSE: collapse; padding-left:8px; padding-right:8px; padding-top:1px; padding-bottom:1px; cellPadding=" 4"="" border="0">
+    <tbody><tr>
+      <td><img src="./Całkowanie numeryczne_ Metoda Monte Carlo_files/i-lo_logo.gif"></td>
+      <td valign="top">
+        <p align="center" style="text-align: center">
+        <b>Zespół Przedmiotowy<br>
+        Chemii-Fizyki-Informatyki</b><br>
+        w I Liceum Ogólnokształcącym<br>
+        <span class="small">im. Kazimierza Brodzińskiego<br>
+        w Tarnowie<br>
+        ul. Piłsudskiego 4<br>
+        &#169;2018 mgr Jerzy Wałaszek</span>
+      </p></td>
+    </tr>
+  </tbody></table>
+</div>
+<p style="line-height: 100%" class="small">
+  Materiały tylko do użytku dydaktycznego. Ich kopiowanie i powielanie jest dozwolone<br>
+  pod warunkiem podania źródła oraz niepobierania za to pieniędzy.
+</p>
+<p class="small">
+  Pytania proszę przesyłać na adres email: <a href="mailto:i-lo@eduinf.waw.pl">i-lo@eduinf.waw.pl</a>
+</p>
+
+<script language="javascript">
+  document.frmadminemail.adminemail_tytul.value = document.title;
+</script>
+<p>
+
+<script type="text/javascript">pcba()</script>
+</p>
+
+
+
+</body></html>
