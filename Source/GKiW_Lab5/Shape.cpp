@@ -10,6 +10,8 @@
 #define M_PI 3.14159265358979323846
 
 #define max_size 1
+extern float GetRandomFloat(float min = 0, float max = 1);
+
 double funGetDistance(double, double, double, double);
 
 Shape funMakeRectangle(double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
@@ -411,12 +413,45 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 
 		*/
 		Shape s = shapeBuilder.getShape(true, false);
-		// field += s.getFieldOfCube();
+		// field += s.getFieldOfCube2();
 
 		rectangles.push_back(s);
 	}
 
 	return rectangleMethodResults(field, rectangles);
+}
+
+monteCarloMethodResults Shape::monteCarloMethod(int _numberOfPoints)
+{
+	std::vector<Point3D> hitPoints;
+	std::vector<Point3D> missPoints;
+
+	auto borderShape = getCubeAround();
+	CubeBorder border = borderShape.getCubeAroundPointRange();
+
+	for (int i = 0; i < _numberOfPoints; i++)
+	{
+		auto point = Point3D(GetRandomFloat(border.minimumPoint.getX(), border.maximumPoint.getX()),
+			GetRandomFloat(border.minimumPoint.getY(), border.maximumPoint.getY()),
+			GetRandomFloat(border.minimumPoint.getZ(), border.maximumPoint.getZ()));
+		if (isInside(point))
+		{
+			hitPoints.push_back(point);
+		}
+		else
+		{
+			missPoints.push_back(point);
+		}
+	}
+
+	auto x = border.maximumPoint.x - border.minimumPoint.x;
+	auto y = border.maximumPoint.y - border.minimumPoint.y;
+	auto z = border.maximumPoint.z - border.minimumPoint.z;
+	auto volueOfCubeAroundShape = x * y * z;
+	auto size = hitPoints.size();
+	float volueOfShape = volueOfCubeAroundShape * ((float)size / (float)_numberOfPoints);
+
+	return monteCarloMethodResults(hitPoints, missPoints, volueOfShape / volueOfCubeAroundShape, includes);
 }
 
 rectangleMethodResults Shape::rectangleMethod2(int n)
@@ -432,7 +467,7 @@ rectangleMethodResults Shape::rectangleMethod2(int n)
 		if (Point3D::areEqual(main, p)) {
 			// the current is a main so the next and the previous is connected
 			nextIsConnectedToMain = true;
-			if (previousIndex !=-1 && !Point3D::areEqual(main, this->points[previousIndex]) && !funDoesContain(connectedToMain, this->points[previousIndex])) {
+			if (previousIndex != -1 && !Point3D::areEqual(main, this->points[previousIndex]) && !funDoesContain(connectedToMain, this->points[previousIndex])) {
 				connectedToMain.push_back(this->points[previousIndex]);
 			}
 		}
@@ -464,11 +499,11 @@ rectangleMethodResults Shape::rectangleMethod2(int n)
 			isInserted = true;
 			xDifferent.push_back(i);
 		}
-		if (!funAreEqual(connectedToMain[i].y, main.y)){
+		if (!funAreEqual(connectedToMain[i].y, main.y)) {
 			isInserted = true;
 			yDifferent.push_back(i);
 		}
-		if (!funAreEqual(connectedToMain[i].z, main.z)){
+		if (!funAreEqual(connectedToMain[i].z, main.z)) {
 			isInserted = true;
 			zDifferent.push_back(i);
 		}
@@ -660,7 +695,7 @@ rectangleMethodResults Shape::rectangleMethod2(int n)
 	for (int xi = 0; xi < x.size(); xi++) {
 		for (int yi = 0; yi < y.size(); yi++) {
 			for (int zi = 0; zi < z.size(); zi++) {
-				double startX = xi > 0 ? main.x + x[xi-1] : main.x;
+				double startX = xi > 0 ? main.x + x[xi - 1] : main.x;
 				double startY = yi > 0 ? main.y + y[yi - 1] : main.y;
 				double startZ = zi > 0 ? main.z + z[zi - 1] : main.z;
 				double endX = main.x + x[xi];
@@ -709,8 +744,16 @@ std::vector<Point3D> Shape::getPoints()
 	return this->points;
 }
 
-Shape Shape::getCube(double minX, double maxX, double minY, double maxY, double minZ, double maxZ)
+Shape Shape::getCubeAround()
 {
+	double minX = funGetMinX3(this->getPoints()).x;
+	double minY = funGetMinY3(this->getPoints()).y;
+	double minZ = funGetMinZ3(this->getPoints()).z;
+
+	double maxX = funGetMaxX3(this->getPoints()).x;
+	double maxY = funGetMaxY3(this->getPoints()).y;
+	double maxZ = funGetMaxZ3(this->getPoints()).z;
+
 	ShapeBuilder shapeBuilder = ShapeBuilder();
 	shapeBuilder.add(minX, minY, minZ);
 	shapeBuilder.add(maxX, minY, minZ);
@@ -739,25 +782,27 @@ Shape Shape::getCube(double minX, double maxX, double minY, double maxY, double 
 	return shapeBuilder.getShape(true, false);
 }
 
-Shape Shape::getCubeAround()
+CubeBorder Shape::getCubeAroundPointRange()
 {
 	double minX = funGetMinX3(this->getPoints()).x;
 	double minY = funGetMinY3(this->getPoints()).y;
 	double minZ = funGetMinZ3(this->getPoints()).z;
-	
+
 	double maxX = funGetMaxX3(this->getPoints()).x;
 	double maxY = funGetMaxY3(this->getPoints()).y;
 	double maxZ = funGetMaxZ3(this->getPoints()).z;
-	
-	return getCube(minX, maxX, minY, maxY, minZ, maxZ);
+
+	CubeBorder border = CubeBorder(Point3D(minX, minY, minZ), Point3D(maxX, maxY, maxZ));
+	return border;
 }
 
-double Shape::getFieldOfCube(){
+double Shape::getFieldOfCube() {
 	double width = funGetDistance(this->base[0], this->base[1]);
 	double length = funGetDistance(this->base[1], this->base[2]);
 	double hight = funGetDistance(this->base[0], this->side1[2]);
 	return width * length * hight;
 }
+
 
 bool Shape::isInside(Point3D _pointToCheck)
 {
@@ -974,7 +1019,7 @@ void ShapeBuilder::normalize(std::vector<Point3D>& _v)
 		p.y += abs(minY.y);
 		p.z += abs(minZ.z);
 	}
-	
+
 	minX = funGetMinX3(_v);
 	minY = funGetMinY3(_v);
 	minZ = funGetMinZ3(_v);
@@ -990,7 +1035,7 @@ void ShapeBuilder::normalize(std::vector<Point3D>& _v)
 	Point3D maxX = funGetMaxX3(_v);
 	Point3D maxY = funGetMaxY3(_v);
 	Point3D maxZ = funGetMaxZ3(_v);
-	
+
 	this->normalizeRatio = funMaximum(maxX.x, maxY.y, maxZ.z) / max_size;
 
 	for (Point3D &p : _v) {
@@ -1029,7 +1074,7 @@ Shape ShapeBuilder::getShape(bool _includes, bool doNormalize)
 				if (funAreEqual(p.x, pp.x) && funAreEqual(p.y, pp.y) && funAreEqual(p.z, pp.z))
 					i++;
 			}
-			if (i<3)
+			if (i < 3)
 				throw std::runtime_error("Every point needs to be connected to at least 3 points!");
 		}
 	}
@@ -1050,10 +1095,10 @@ bool ShapeBuilder::doesLineExist(Point3D p1, Point3D p2)
 {
 	for (int i = 0; i < this->lines.size(); i++) {
 		Point3D l1 = this->lines[i][0];
-		Point3D l2= this->lines[i][1];
+		Point3D l2 = this->lines[i][1];
 		if (Point3D::areEqual(l1, p1) && Point3D::areEqual(l2, p2)
 			|| Point3D::areEqual(l2, p1) && Point3D::areEqual(l1, p2))
-		return true;
+			return true;
 	}
 	return false;
 }
@@ -1234,16 +1279,16 @@ IntersectionInfo Line::intersect(Line _lineToCheck)
 
 	int x, y;
 	num = (b1 * c2) - (b2 * c1);
-	if (num < 0) 
-		x = (num - offset) / denom; 
-	else 
+	if (num < 0)
+		x = (num - offset) / denom;
+	else
 		x = (num + offset) / denom;
 
 	num = (a2 * c1) - (a1 * c2);
 
-	if (num < 0)  
-		y = (num - offset) / denom; 
-	else 
+	if (num < 0)
+		y = (num - offset) / denom;
+	else
 		y = (num + offset) / denom;
 
 	return IntersectionInfo(Point2D(x, y));
@@ -1273,4 +1318,24 @@ rectangleMethodResults::rectangleMethodResults(double _volume, std::vector<Shape
 std::vector<Shape> rectangleMethodResults::getRectangles()
 {
 	return this->rectangles;
+}
+
+double monteCarloMethodResults::getVolume()
+{
+	return this->volume;
+}
+
+bool monteCarloMethodResults::getInclude()
+{
+	return this->include;
+}
+
+std::vector<Point3D> monteCarloMethodResults::getMissedPoints()
+{
+	return this->pointsThatMissed;
+}
+
+std::vector<Point3D> monteCarloMethodResults::getHitPoints()
+{
+	return this->pointsThatHit;
 }

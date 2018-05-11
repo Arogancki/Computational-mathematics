@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "OBJLoader.h"
 #include "FileParser.h"
 
 #define debug true
@@ -11,7 +10,9 @@ std::vector<Point3D> points;
 // Game
 bool captureMouse = true;
 bool free3DMovement = true;
+double volume = 0.0;
 
+int PointsToShoot = 500;
 int mouseX = 0;
 int mouseY = 0;
 
@@ -20,73 +21,42 @@ float mouseSensitivity = .15f;
 int prezentacjaFigurNaStarcieIndex = 0;
 int prezentacjaFigurNaStarcieEtap = 0;
 bool CHECK_FEATURE_SWITCH = true;
+GLuint Points;
 
 #pragma endregion
 
 void drawText(float x, float y, std::string st);
 void BetterDraw(float x, float y, std::string message, color color);
 
+void DrawPoint(Point3D p1, double r, double g, double b) {
+	glPushMatrix();
+
+	float m_amb[] = { r, g, b, 1.0f };
+	float m_dif[] = { r, g, b, 1.0f };
+	float m_spe[] = { r, g, b, 1.0f };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
+
+	glTranslatef(p1.getX(), p1.getY(), p1.getZ());
+	glutSolidCube(0.01);
+	glPopMatrix();
+}
+
+void CalculateVolume();
+
 // https://stackoverflow.com/questions/686353/c-random-float-number-generation
-float GetRandomFloat() {
-	return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+float GetRandomFloat(float min = 0, float max = 1) {
+	return min + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (max - min));
 }
 
 ParsedData *shapeConfig;
 std::vector<Shape> outters = std::vector<Shape>();
 std::vector<rectangleMethodResults> resultsR = std::vector<rectangleMethodResults>();
+std::vector<monteCarloMethodResults> resultsM = std::vector<monteCarloMethodResults>();
 int main(int argc, char* argv[])
 {
-	//try {
-	// load file
-	string filePath;
-	cout << "Please enter path to file with shape specification:\n";
-	if (!debug)
-		cin >> filePath;
-	else
-		filePath = "./testFile.txt";
-
-	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
-	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
-
-	for (Shape &ssssssssss : shapeConfig->shapes) {
-		Shape rmr = ssssssssss.getCubeAround();
-		outters.push_back(rmr);
-	}
-
-	if (shapeConfig->type == 'R') {
-		for (Shape &ssssssssss : shapeConfig->shapes) {
-			rectangleMethodResults rmr = ssssssssss.rectangleMethod(sc.value);
-			resultsR.push_back(rmr);
-		}
-	}
-
-	if (shapeConfig->type == 'M') {
-		for (Shape &ssssssssss : shapeConfig->shapes) {
-			// TODO monte carlo here!!
-		}
-	}
-
-	if (debug) {
-		int i = 0;
-		for (Shape shape : shapeConfig->shapes) {
-			cout << "\nShape: " << ++i << " = " << shape.getPoints().size() - 1 << " lines.\nPoints:" << "\n";
-			int j = 0;
-			for (Point3D point3D : shape.getPoints())
-				cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
-		}
-	}
-	
-	for (float i = 0; i <= 1; i += 0.1) {
-		points.push_back(Point3D(i, i, i));
-		points.push_back(Point3D(1 - i, 0, 1 - i));
-		points.push_back(Point3D(1 - i, 1, i));
-		//points.push_back(Point3D(0, i, 1-i));
-	}
-
-	/*for (int i = 0; i < 30; i++) {
-		points.push_back(Point3D(GetRandomFloat(), GetRandomFloat(), GetRandomFloat()));
-	}*/
-
+#pragma region OpenGL stuff
 
 	glutInit(&argc, argv);
 
@@ -94,8 +64,7 @@ int main(int argc, char* argv[])
 	glutInitWindowSize(640, 360);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-	//TODO zmieniæ nazwê gry!
-	glutCreateWindow("Calkowanie figur?? xDxD");
+	glutCreateWindow("Obliczanie objetosci figur");
 
 	glutDisplayFunc(OnRender);
 	glutReshapeFunc(OnReshape);
@@ -104,7 +73,7 @@ int main(int argc, char* argv[])
 	glutPassiveMotionFunc(OnMouseMove);
 	glutMotionFunc(OnMouseMove);
 	glutTimerFunc(17, OnTimer, 0);
-	
+
 	glEnable(GL_DEPTH_TEST);
 
 	glEnable(GL_CULL_FACE);
@@ -114,7 +83,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
-	
+
 	float gl_amb[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gl_amb);
 
@@ -132,8 +101,40 @@ int main(int argc, char* argv[])
 	mouseX = glutGet(GLUT_WINDOW_WIDTH) / 2;
 	mouseY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 	glutSetCursor(GLUT_CURSOR_NONE);
+
+#pragma endregion
+
+	//try {
+	// load file
+	string filePath;
+	cout << "Please enter path to file with shape specification:\n";
+	if (!debug)
+		cin >> filePath;
+	else {
+		filePath = "./testFile.txt";
+		//filePath = "./cube.txt";
+	}
+
+	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
+	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
+
 	
+
+	CalculateVolume();
+
+	if (debug) {
+		int i = 0;
+		for (Shape shape : shapeConfig->shapes) {
+			cout << "\nShape: " << ++i << " = " << shape.getPoints().size() - 1 << " lines.\nPoints:" << "\n";
+			int j = 0;
+			for (Point3D point3D : shape.getPoints())
+				cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
+		}
+	}
+
 	glutMainLoop();
+
+	glDeleteLists(Points, 1);
 
 	return 0;
 	/*
@@ -169,6 +170,25 @@ void OnKeyDown(unsigned char key, int x, int y) {
 			prezentacjaFigurNaStarcieIndex++;
 		}
 	}
+		// Console that allows to write etc. 
+		if (consoleComandString != "")
+		{
+			switch (consoleComandString[0])
+			{
+			case 'p':
+			case 'P':
+				PointsToShoot = stoi(consoleComandString.substr(1, consoleComandString.length()));
+				CalculateVolume();
+				break;
+			case 'M':
+			case 'm':
+				//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
+				break;
+			default:
+				break;
+			}
+			consoleComandString.erase();
+		}
 
 	//backspace
 	if (enterPressed && key == 8)
@@ -193,7 +213,7 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 }
 
-void OnKeyUp(unsigned char key, int x, int y) {
+void OnKeyUp(unsigned char key, int x, int y){
 	keystate[key] = false;
 }
 
@@ -224,6 +244,45 @@ void MouseButton(int button, int state, int x, int y)
 }
 
 #pragma endregion
+
+void CalculateVolume() {
+
+	outters.clear();
+	for (Shape &ssssssssss : shapeConfig->shapes) {
+		Shape rmr = ssssssssss.getCubeAround();
+		outters.push_back(rmr);
+	}
+	resultsR.clear();
+	if (shapeConfig->type == 'R') {
+		for (Shape &ssssssssss : shapeConfig->shapes) {
+			rectangleMethodResults rmr = ssssssssss.rectangleMethod(shapeConfig->value);
+			resultsR.push_back(rmr);
+		}
+	}
+
+	resultsM.clear();
+	if (shapeConfig->type == 'M') {
+		for (Shape &ssssssssss : shapeConfig->shapes) {
+			monteCarloMethodResults mcmr = ssssssssss.monteCarloMethod(PointsToShoot);
+			resultsM.push_back(mcmr);
+		}
+	}
+	
+	Points = glGenLists(1);
+
+	if (shapeConfig->type == 'M') {
+		for (auto result : resultsM) {
+			glNewList(Points, GL_COMPILE);
+			for (auto hitPoint : result.getHitPoints()) {
+				DrawPoint(hitPoint, 0, 1, 0);
+			}
+			for (auto missPoint : result.getMissedPoints()) {
+				DrawPoint(missPoint, 1, 0, 0);
+			}
+			glEndList();
+		}
+	}
+}
 
 void OnTimer(int id) {
 
@@ -307,7 +366,7 @@ void DrawGUI()
 #pragma region Credentials
 	int x = 23;
 	int y = -45;
-	s << "Krzysztof Kolodziejczak";
+	s << "Krzysztof Ko³odziejczak";
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 	s << "Artur Ziemba";
@@ -319,30 +378,37 @@ void DrawGUI()
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 
-#pragma endregion
+	x = -62;
+	y = 58;
+	s << "Commands";
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+	y -= 7;
+	s << "p[number] - number of points";
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
 
+
+#pragma endregion
+	x = 6;
+	y = 58;
+	s << "Volume: " << volume;
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+	y -= 7;
+	s << "Points: " << PointsToShoot;
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
 #pragma region Console
 	if (enterPressed)
 	{
 		s << "->" << consoleComandString;
-		BetterDraw(-60, -60, s.str(), WHITE);
+		BetterDraw(-62, -60, s.str(), WHITE);
 	}
 #pragma endregion
 }
 
-void DrawPoint(Point3D p1, double r, double g, double b) {
-	float m_amb[] = { r, g, b, 1.0f };
-	float m_dif[] = { r, g, b, 1.0f };
-	float m_spe[] = { r, g, b, 1.0f };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, m_amb);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, m_dif);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
 
-	glPushMatrix();
-	glTranslatef(p1.getX(), p1.getY(), p1.getZ());
-	glutSolidCube(0.01);
-	glPopMatrix();
-}
 
 void DrawLine(Point3D p1, Point3D p2, double r, double g, double b) {
 	glLineWidth(2.0);
@@ -406,7 +472,7 @@ void OnRender() {
 
 	#pragma endregion
 
-	// Rysowanie prezentacjaFigurNaStarcieIndex
+		// Rysowanie prezentacjaFigurNaStarcieIndex
 		if (CHECK_FEATURE_SWITCH && prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()) {
 			string info = "Checking shape (" + to_string(prezentacjaFigurNaStarcieIndex + 1) + ") - ";
 			if (prezentacjaFigurNaStarcieEtap == 0) {
@@ -426,41 +492,55 @@ void OnRender() {
 				DrawShape(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex], 1.0, 0.0, 1.0);
 			}
 			BetterDraw(-64, 58, info, WHITE);
+
 		}
-		else {
-			//Rysowanie figury
-
-			// glowna figura
-			DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
-
-			// figura opatulujaca
-			if (shapeConfig->type == 'M') {
-				for (Shape &sssss : outters) {
-					DrawShape(sssss, 1.0, 0.0, 1.0);
+	else {
+		//Rysowanie figury
+	// glowna figura
+	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
+	
+	int i = -1;
+	volume = 0;
+	// figura opatulujaca
+	if (shapeConfig->type == 'M') {
+		i = -1;
+		for (Shape &sssss : outters) {
+			i++;
+			DrawShape(sssss, 1.0, 0.0, 1.0);
+			for (auto &result : resultsM) {
+				if (shapeConfig->shapes[i].getIncludes()) {
+					volume += result.getVolume();
+				}
+				else {
+					volume -= result.getVolume();
 				}
 			}
-
-			// dla methody kwadratow rysowanie
-			if (shapeConfig->type == 'R') {
-				double volume = 0.0;
-				int i = -1;
-				for (rectangleMethodResults &rrrr : resultsR) {
-					i++;
-					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
-					if (shapeConfig->shapes[i].getIncludes()) {
-						volume += rrrr.getVolume();
-					}
-					else {
-						volume -= rrrr.getVolume();
-					}
-				}
-				std::ostringstream s;
-				s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
-				int x = -64;
-				int y = 58;
-				BetterDraw(x, y, s.str(), WHITE);
+		}
+		volume = round(volume * 10000.0) / 10000.0;
+	}
+	
+	// dla methody kwadratow rysowanie
+	if (shapeConfig->type == 'R') {
+		double volume = 0.0;
+		int i = -1;
+		for (rectangleMethodResults &rrrr : resultsR) {
+			i++;
+			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
+			if (shapeConfig->shapes[i].getIncludes()) {
+				volume += rrrr.getVolume();
 			}
+			else {
+				volume -= rrrr.getVolume();
+			}
+		}
+		std::ostringstream s;
+		s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
+		int x = -64;
+		int y = 58;
+		BetterDraw(x, y, s.str(), WHITE);
+	}
 
+	glCallList(Points);
 
 			for (auto point : points) {
 				if (shapeConfig->shapes.front().isInside(point)) {
