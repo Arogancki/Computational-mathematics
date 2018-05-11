@@ -378,8 +378,8 @@ void DrawGUI()
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 
-	x = -62;
-	y = 58;
+	x = -64;
+	y = 50;
 	s << "Commands";
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
@@ -435,7 +435,7 @@ void DrawShape(Shape shape, double r, double g, double b) {
 void DrawShape2D(std::vector<Point2D> _v, double r, double g, double b) {
 	// zakladamy ze kazdy shape ma conajmniej dlugosc == 3
 	for (int i = 0; i < _v.size() - 1; i++) {
-		DrawLine(Point3D(points[i].x, points[i].y, 0.0), Point3D(points[i+1].x, points[i+1].y, 0.0), r, g, b);
+		DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i+1].x, _v[i+1].y, 0.0), r, g, b);
 	}
 }
 
@@ -517,6 +517,8 @@ void OnRender() {
 			}
 		}
 		volume = round(volume * 10000.0) / 10000.0;
+
+		glCallList(Points);
 	}
 	
 	// dla methody kwadratow rysowanie
@@ -539,8 +541,6 @@ void OnRender() {
 		int y = 58;
 		BetterDraw(x, y, s.str(), WHITE);
 	}
-
-	glCallList(Points);
 
 			for (auto point : points) {
 				if (shapeConfig->shapes.front().isInside(point)) {
