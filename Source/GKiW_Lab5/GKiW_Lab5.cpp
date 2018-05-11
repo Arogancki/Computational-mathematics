@@ -17,6 +17,10 @@ int mouseY = 0;
 
 float mouseSensitivity = .15f;
 
+int prezentacjaFigurNaStarcieIndex = 0;
+int prezentacjaFigurNaStarcieEtap = 0;
+bool CHECK_FEATURE_SWITCH = true;
+
 #pragma endregion
 
 void drawText(float x, float y, std::string st);
@@ -159,26 +163,11 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	if (key == 27) { // 27 == ESC
 		glutLeaveMainLoop();
 	}
-	
-	if (key == 13) { // 13 == Enter
-		// Start Gry
-		glutMouseFunc(MouseButton);
 
-		// Console that allows to write etc. 
-		if (consoleComandString != "")
-		{
-			switch (consoleComandString[0])
-			{
-			case 'M':
-			case 'm':
-				//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
-				break;
-			default:
-				break;
-			}
-			consoleComandString.erase();
+	if (key == 13) { // 13 == Enter
+		if (++prezentacjaFigurNaStarcieEtap >= 3) {
+			prezentacjaFigurNaStarcieIndex++;
 		}
-		enterPressed = !enterPressed;
 	}
 
 	//backspace
@@ -377,6 +366,13 @@ void DrawShape(Shape shape, double r, double g, double b) {
 	}
 }
 
+void DrawShape2D(std::vector<Point2D> _v, double r, double g, double b) {
+	// zakladamy ze kazdy shape ma conajmniej dlugosc == 3
+	for (int i = 0; i < _v.size() - 1; i++) {
+		DrawLine(Point3D(points[i].x, points[i].y, 0.0), Point3D(points[i+1].x, points[i+1].y, 0.0), r, g, b);
+	}
+}
+
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
 	for (Shape shape : shapes)
 		if (shape.getIncludes())
@@ -410,49 +406,73 @@ void OnRender() {
 
 	#pragma endregion
 
-	//Rysowanie figury
-
-	// glowna figura
-	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
-	
-	// figura opatulujaca
-	if (shapeConfig->type == 'M')
-		for (Shape &sssss : outters) {
-			DrawShape(sssss, 1.0, 0.0, 1.0);
-		}
-	
-	// dla methody kwadratow rysowanie
-	if (shapeConfig->type == 'R') {
-		double volume = 0.0;
-		int i = -1;
-		for (rectangleMethodResults &rrrr : resultsR) {
-			i++;
-			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
-			if (shapeConfig->shapes[i].getIncludes()) {
-				volume += rrrr.getVolume();
+	// Rysowanie prezentacjaFigurNaStarcieIndex
+		if (CHECK_FEATURE_SWITCH && prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()) {
+			string info = "Checking shape (" + to_string(prezentacjaFigurNaStarcieIndex + 1) + ") - ";
+			if (prezentacjaFigurNaStarcieEtap == 0) {
+				info += "base connection";
+				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getBase(), 0, 1, 0);
 			}
-			else {
-				volume -= rrrr.getVolume();
+			if (prezentacjaFigurNaStarcieEtap == 1) {
+				info += "side1 connection";
+				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide1(), 0, 1, 0);
 			}
-		}
-		std::ostringstream s;
-		s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
-		int x = 6;
-		int y = 58;
-		BetterDraw(x, y, s.str(), WHITE);
-	}
-
-
-	for (auto point : points) {
-		if (shapeConfig->shapes.front().isInside(point)) {
-			DrawPoint(point, 0, 1, 0);
+			if (prezentacjaFigurNaStarcieEtap == 2) {
+				info += "side2 connection";
+				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide2(), 0, 1, 0);
+			}
+			if (prezentacjaFigurNaStarcieEtap == 3) {
+				info += "3d shape";
+				DrawShape(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex], 1.0, 0.0, 1.0);
+			}
+			BetterDraw(-64, 58, info, WHITE);
 		}
 		else {
-			DrawPoint(point, 1, 0, 0);
-		}
-	}
+			//Rysowanie figury
 
-	DrawGUI();
+			// glowna figura
+			DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
+
+			// figura opatulujaca
+			if (shapeConfig->type == 'M') {
+				for (Shape &sssss : outters) {
+					DrawShape(sssss, 1.0, 0.0, 1.0);
+				}
+			}
+
+			// dla methody kwadratow rysowanie
+			if (shapeConfig->type == 'R') {
+				double volume = 0.0;
+				int i = -1;
+				for (rectangleMethodResults &rrrr : resultsR) {
+					i++;
+					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
+					if (shapeConfig->shapes[i].getIncludes()) {
+						volume += rrrr.getVolume();
+					}
+					else {
+						volume -= rrrr.getVolume();
+					}
+				}
+				std::ostringstream s;
+				s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
+				int x = -64;
+				int y = 58;
+				BetterDraw(x, y, s.str(), WHITE);
+			}
+
+
+			for (auto point : points) {
+				if (shapeConfig->shapes.front().isInside(point)) {
+					DrawPoint(point, 0, 1, 0);
+				}
+				else {
+					DrawPoint(point, 1, 0, 0);
+				}
+			}
+
+			DrawGUI();
+		}
 
 	glutSwapBuffers();
 	glFlush();

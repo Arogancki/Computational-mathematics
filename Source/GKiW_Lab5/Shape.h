@@ -45,13 +45,14 @@ public:
 
 class Shape {
 private:
-	std::vector<Point2D> rectangleMethod2d(std::vector<Point2D>&, int);
+	std::vector<std::vector<Point2D>> rectangleMethod2d(std::vector<Point2D>&, int);
 	bool includes;
 	std::vector<Point3D> points;
 	std::vector<Point2D> base;
 	std::vector<Point2D> side1;
 	std::vector<Point2D> side2;
 	bool isInside(std::vector<Point2D>, Line);
+	static Shape getCube(double, double, double, double, double, double);
 public:
 	rectangleMethodResults rectangleMethod2(int);
 	rectangleMethodResults rectangleMethod(int);

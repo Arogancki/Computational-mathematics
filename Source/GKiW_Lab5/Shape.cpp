@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "Shape.h"
 #include <algorithm>
-#include <algorithm>
+#include <math.h> 
 
 #define safe false
 #define epsilon 0.01
 #define ABS(x) ((x)<0?-(x):(x))
 #define PointOutside Point2D(-1,-1)
+#define M_PI 3.14159265358979323846
 
-
-#define max_size 2
+#define max_size 1
 double funGetDistance(double, double, double, double);
 
 Shape funMakeRectangle(double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
@@ -41,9 +41,8 @@ Shape funMakeRectangle(double minX, double maxX, double minY, double maxY, doubl
 	return shapeBuilder.getShape(true, false);
 }
 
-
 double funGetYfromPoints(double x1, double y1, double x2, double y2, double x) {
-	return y1 + ((x - x1) * (funGetDistance(y1, 0, y2, 0) / funGetDistance(x1, 0, x2, 0)));
+	return ((y2 - y1)*(x - x1)) / (x2 - x1) + y1;
 }
 
 double funMaximum(double a, double b, double c)
@@ -70,6 +69,46 @@ double funGetDistance(double x1, double y1, double x2, double y2) {
 
 double funGetDistance(Point2D v1, Point2D v2) {
 	return funGetDistance(v1.x, v1.y, v2.x, v2.y);
+}
+
+Point2D funGetPointAway(double x1, double y1, double x2, double y2, double distance) {
+	Point2D w = Point2D(x2 - x1, y2 - y1);
+	double a = distance / sqrt(pow(w.x, 2) + pow(w.y, 2));
+	return Point2D(x1 + (w.x*a), y1 + (w.y*a));
+}
+
+Point2D funGetPointAway(Point2D v1, Point2D v2, double distance) {
+	return funGetPointAway(v1.x, v1.y, v2.x, v2.y, distance);
+}
+
+double radToDeg(double x) {
+	return x * 57.2957795130;
+}
+
+double degToRad(double x) {
+	return (x * (M_PI / 180.0));
+}
+
+double funGetAngle(double x0, double y0, double x1, double y1, double x2, double y2) {
+	x1 -= x0;
+	x2 -= x0;
+	y1 -= y0;
+	y2 -= y0;
+	double d = (x1*x2) + (y1*y2);
+	double l1 = sqrt(pow(x1, 2) + pow(y1, 2));
+	double l2 = sqrt(pow(x2, 2) + pow(y2, 2));
+	return acos(d / (l1*l2));
+}
+
+Point2D funSpinPoint(double x, double y, double angleRad) {
+	double s = sin(angleRad);
+	double c = cos(angleRad);
+	Point2D er = Point2D((x*c) + (y*s), (y*c) - (s*x));
+	return er;
+}
+
+double funGetAngle(Point2D v0, Point2D v1, Point2D v2) {
+	return funGetAngle(v0.x, v0.y, v1.x, v1.y, v2.x, v2.y);
 }
 
 bool funAreEqual(double _x, double _y)
@@ -319,12 +358,65 @@ bool funDoesContain(std::vector<Point3D> _v, Point3D _p) {
 	return false;
 }
 
-
-
 rectangleMethodResults Shape::rectangleMethod(int n) {
-	rectangleMethod2d(this->base, n);
+	std::vector<std::vector<Point2D>> rB = rectangleMethod2d(this->base, n);
+	std::vector<std::vector<Point2D>> rS1 = rectangleMethod2d(this->side1, n);
+	std::vector<std::vector<Point2D>> rS2 = rectangleMethod2d(this->side2, n);
 	std::vector<Shape> rectangles = std::vector<Shape>();
-	return rectangleMethodResults(0, rectangles);
+
+	double field = 0.0;
+
+	for (int i = 9; i < rB.size(); i++) {
+		ShapeBuilder shapeBuilder = ShapeBuilder();
+
+		// podstawa
+		/*
+		shapeBuilder.add(rB[i][0].x, 0, rB[i][0].y);
+		shapeBuilder.add(rB[i][1].x, 0, rB[i][1].y);
+		shapeBuilder.add(rB[i][2].x, 0, rB[i][2].y);
+		shapeBuilder.add(rB[i][3].x, 0, rB[i][3].y);
+		shapeBuilder.add(rB[i][0].x, 0, rB[i][0].y);
+		*/
+
+		// side1
+		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
+		shapeBuilder.add(rS1[i][1].x, rS1[i][1].y, 0.0);
+		shapeBuilder.add(rS1[i][2].x, rS1[i][2].y, 0.0);
+		shapeBuilder.add(rS1[i][3].x, rS1[i][3].y, 0.0);
+		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
+
+		/*
+		shapeBuilder.add(rB[i][0].x, rS1[i][0].y, rB[i][0].y);
+		shapeBuilder.add(rB[i][1].x, rS1[i][1].y, rB[i][1].y);
+		shapeBuilder.add(rB[i][2].x, rS1[i][1].y, rB[i][2].y);
+		shapeBuilder.add(rB[i][3].x, rS1[i][0].y, rB[i][3].y);
+		
+		shapeBuilder.add(rB[i][0].x, rS1[i][0].y, rB[i][0].y);
+		shapeBuilder.add(rB[i][0].x, rS1[i][3].y, rB[i][0].y);
+		
+		shapeBuilder.add(rB[i][1].x, rS1[i][2].y, rB[i][1].y);
+		shapeBuilder.add(rB[i][1].x, rS1[i][1].y, rB[i][1].y);
+		shapeBuilder.add(rB[i][1].x, rS1[i][2].y, rB[i][1].y);
+
+		
+		shapeBuilder.add(rB[i][2].x, rS1[i][2].y, rB[i][2].y);
+		shapeBuilder.add(rB[i][2].x, rS1[i][1].y, rB[i][2].y);
+		shapeBuilder.add(rB[i][2].x, rS1[i][2].y, rB[i][2].y);
+		
+		shapeBuilder.add(rB[i][3].x, rS1[i][3].y, rB[i][3].y);
+		shapeBuilder.add(rB[i][3].x, rS1[i][1].y, rB[i][3].y);
+		shapeBuilder.add(rB[i][3].x, rS1[i][3].y, rB[i][3].y);
+
+		shapeBuilder.add(rB[i][0].x, rS1[i][3].y, rB[i][0].y);
+
+		*/
+		Shape s = shapeBuilder.getShape(true, false);
+		// field += s.getFieldOfCube();
+
+		rectangles.push_back(s);
+	}
+
+	return rectangleMethodResults(field, rectangles);
 }
 
 rectangleMethodResults Shape::rectangleMethod2(int n)
@@ -617,16 +709,8 @@ std::vector<Point3D> Shape::getPoints()
 	return this->points;
 }
 
-Shape Shape::getCubeAround()
+Shape Shape::getCube(double minX, double maxX, double minY, double maxY, double minZ, double maxZ)
 {
-	double minX = funGetMinX3(this->getPoints()).x;
-	double minY = funGetMinY3(this->getPoints()).y;
-	double minZ = funGetMinZ3(this->getPoints()).z;
-	
-	double maxX = funGetMaxX3(this->getPoints()).x;
-	double maxY = funGetMaxY3(this->getPoints()).y;
-	double maxZ = funGetMaxZ3(this->getPoints()).z;
-
 	ShapeBuilder shapeBuilder = ShapeBuilder();
 	shapeBuilder.add(minX, minY, minZ);
 	shapeBuilder.add(maxX, minY, minZ);
@@ -641,7 +725,7 @@ Shape Shape::getCubeAround()
 	shapeBuilder.add(maxX, maxY, minZ);
 	shapeBuilder.add(maxX, minY, minZ);
 	shapeBuilder.add(maxX, maxY, minZ);
-	
+
 	shapeBuilder.add(maxX, maxY, maxZ);
 	shapeBuilder.add(maxX, minY, maxZ);
 	shapeBuilder.add(maxX, maxY, maxZ);
@@ -651,8 +735,21 @@ Shape Shape::getCubeAround()
 	shapeBuilder.add(minX, maxY, maxZ);
 
 	shapeBuilder.add(minX, maxY, minZ);
-	
+
 	return shapeBuilder.getShape(true, false);
+}
+
+Shape Shape::getCubeAround()
+{
+	double minX = funGetMinX3(this->getPoints()).x;
+	double minY = funGetMinY3(this->getPoints()).y;
+	double minZ = funGetMinZ3(this->getPoints()).z;
+	
+	double maxX = funGetMaxX3(this->getPoints()).x;
+	double maxY = funGetMaxY3(this->getPoints()).y;
+	double maxZ = funGetMaxZ3(this->getPoints()).z;
+	
+	return getCube(minX, maxX, minY, maxY, minZ, maxZ);
 }
 
 double Shape::getFieldOfCube(){
@@ -682,13 +779,136 @@ bool Shape::isInside(Point3D _pointToCheck)
 	return false;
 }
 
-std::vector<Point2D> Shape::rectangleMethod2d(std::vector<Point2D>& _v, int n)
+std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>& _v, int n)
 {
-	std::vector<Point2D> rectangles = std::vector<Point2D>();
-	Point2D main = _v[0];
-	//TODO here!
+	std::vector<std::vector<Point2D>> rectangles = std::vector<std::vector<Point2D>>();
+	// znajdz najdlasze punkty ktore beda wziete jako podstawa
+	for (int i = 0; i < _v.size(); i++) {
+		for (int j = 0; j < _v.size(); j++) {
+			if (i == j)
+				continue;
+			if (Point2D::areEqual(_v[i], _v[j]))
+				throw "Rectangle method - projection cannot have a point connected more then once!";
+		}
+	}
 
-	return std::vector<Point2D>();
+	int index1 = -1;
+	double max = 0.0;
+	int index2 = -1;
+	bool breakflag = false;
+	for (int i = 0; i < _v.size(); i++) {
+		int j = i + 1;
+		if (j >= _v.size()){
+			j = 0;
+			breakflag = true;
+		}
+		double distance = funGetDistance(_v[i], _v[j]);
+		if (distance > max) {
+			index2 = j;
+			max = distance;
+			index1 = i;
+		}
+		if (breakflag)
+			break;
+	}
+	if (funAreEqual(0.0, max)) {
+		throw "Rectangle method - not enought points!";
+	}
+	Point2D first = _v[index1];
+	Point2D last = _v[index2];
+	Point2D firstGlobal = first;
+	Point2D lastGlobal = last;
+
+	// przesuniecie punktów wedlug first do 0,0 0,0
+	double shiftX = first.x;
+	double shiftY = first.y;
+	first.x = 0.0;
+	first.y = 0.0;
+	last.x -= shiftX;
+	last.y -= shiftY;
+	double distance = funGetDistance(first, last);
+	Point2D tempLast = funGetPointAway(first, Point2D(1.0, 0.0), distance);
+	double angle = funGetAngle(first, last, tempLast);
+
+	// take ffirst line and devide it into n pieces
+	double step = distance / ((double)n);
+	double currentStep = step;
+	int currentIndex = index1 - 1;
+	int poprzedniIndex = index1;
+	do {
+		if (currentIndex < 0) {
+			currentIndex = _v.size() - 1;
+		}
+		if (currentIndex == index1) {
+			break;
+		}
+
+		// logika 
+		// znalezienie odpowiednio odleglego punktu na podstawie
+		// przesuniecie punktów wedlug first do 0,0 0,0
+		Point2D currentPoint = _v[currentIndex];
+		currentPoint.x -= shiftX; 
+		currentPoint.y -= shiftY;
+
+		//double fk = radToDeg(funGetAngle(first, last, currentPoint));
+		//double lk = radToDeg(funGetAngle(last, first, currentPoint));
+		//double ck = radToDeg(funGetAngle(currentPoint, first, last));
+
+		currentPoint = funSpinPoint(currentPoint.x, currentPoint.y, angle);
+
+		//double fk2 = radToDeg(funGetAngle(first, tempLast, currentPoint));
+		//double lk2 = radToDeg(funGetAngle(tempLast, first, currentPoint));
+		//double ck2 = radToDeg(funGetAngle(currentPoint, first, tempLast));
+		// po tych doublaach mozna sprawdzic czy wykonany obrot jest ok
+
+		Point2D prevPoint = _v[poprzedniIndex];
+		prevPoint.x -= shiftX;
+		prevPoint.y -= shiftY;
+		prevPoint = funSpinPoint(prevPoint.x, prevPoint.y, angle);
+
+		// punkty sa znormalizowane tu
+		do {
+			Point2D basePoint = funGetPointAway(first, tempLast, currentStep);
+			Point2D highPoint = basePoint;
+
+			// ta funckja ponizej zle policzyla dla kolejnego wezla
+			highPoint.y = funGetYfromPoints(prevPoint.x, prevPoint.y, currentPoint.x, currentPoint.y, highPoint.x);
+
+			double distanceToHigh = funGetDistance(first, highPoint);
+			double distanceToCurent = funGetDistance(first, currentPoint);
+			if (distanceToHigh > distanceToCurent) {
+				// should be next point already
+				break;
+			}
+
+			// policzyc odleglosci od punktow bazowych
+			double fromFirst = funGetDistance(first, basePoint);
+			double fromCurrent = funGetDistance(currentPoint, highPoint);
+			
+			Point2D realfloor1 = funGetPointAway(firstGlobal, lastGlobal, fromFirst - step);
+			Point2D realfloor2 = funGetPointAway(firstGlobal, lastGlobal, fromFirst);
+			Point2D realCeil2 = funGetPointAway(_v[currentIndex], _v[poprzedniIndex], fromCurrent);
+
+			double midleLenght = funGetDistance(realfloor1, realCeil2);
+			Point2D middle = funGetPointAway(realfloor1, realCeil2, midleLenght/2.0);
+			midleLenght = funGetDistance(realfloor2, middle);
+			Point2D realCeil1 = funGetPointAway(realfloor2, middle, midleLenght*2);
+
+			std::vector<Point2D> rectangle = std::vector<Point2D>();
+			rectangle.push_back(realfloor1);
+			rectangle.push_back(realfloor2);
+			rectangle.push_back(realCeil2);
+			rectangle.push_back(realCeil1);
+
+			rectangles.push_back(rectangle);
+
+			currentStep += step;
+		} while(true) ;
+
+		poprzedniIndex = currentIndex;
+		currentIndex--;
+	} while (true);
+	return rectangles;
 }
 
 bool Shape::isInside(std::vector<Point2D> _shape, Line _lineToCheck)
@@ -779,7 +999,6 @@ void ShapeBuilder::normalize(std::vector<Point3D>& _v)
 		p.z /= this->normalizeRatio;
 	}
 }
-
 
 ShapeBuilder::ShapeBuilder()
 {
@@ -958,8 +1177,6 @@ void ShapeBuilder::addToSide2(double _x, double _y)
 {
 	addTo(_x, _y, this->side2);
 }
-
-
 
 //ShapeBuilder end
 
