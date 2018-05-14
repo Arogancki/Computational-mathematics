@@ -368,7 +368,7 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 
 	double field = 0.0;
 
-	for (int i = 9; i < rB.size(); i++) {
+	for (int i = 0; i < rB.size(); i++) {
 		ShapeBuilder shapeBuilder = ShapeBuilder();
 
 		// podstawa

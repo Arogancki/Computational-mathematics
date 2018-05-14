@@ -165,49 +165,48 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		glutLeaveMainLoop();
 	}
 
-	if (key == 13) { // 13 == Enter
-		if (prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()){
-			player.pos.x = 0.0f;
-			player.pos.y = 1.0f;
-			player.pos.z = 4.0f;
+	if (key == 13 && prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()) {
+		player.pos.x = 0.0f;
+		player.pos.y = 1.0f;
+		player.pos.z = 4.0f;
 
-			player.dir.x = 0.0f;
-			player.dir.y = 0.0f;
-			player.dir.z = -1.0f;
-			if (++prezentacjaFigurNaStarcieEtap > 3) {
-				prezentacjaFigurNaStarcieIndex++;
-			}
+		player.dir.x = 0.0f;
+		player.dir.y = 0.0f;
+		player.dir.z = -1.0f;
+		if (++prezentacjaFigurNaStarcieEtap > 3) {
+			prezentacjaFigurNaStarcieIndex++;
 		}
 	}
-		// Console that allows to write etc. 
-		if (consoleComandString != "")
+	
+
+	// Console that allows to write etc. 
+	if (consoleComandString != ""){
+		switch (consoleComandString[0])
 		{
-			switch (consoleComandString[0])
-			{
-			case 'p':
-			case 'P':
-				PointsToShoot = stoi(consoleComandString.substr(1, consoleComandString.length()));
-				CalculateVolume();
-				break;
-			case 'M':
-			case 'm':
-				//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
-				break;
-			default:
-				break;
-			}
-			consoleComandString.erase();
+		case 'p':
+		case 'P':
+			PointsToShoot = stoi(consoleComandString.substr(1, consoleComandString.length()));
+			CalculateVolume();
+			break;
+		case 'M':
+		case 'm':
+			//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
+			break;
+		default:
+			break;
 		}
+		consoleComandString.erase();
+	}
 
 	//backspace
-	if (enterPressed && key == 8)
-	{
+	if (enterPressed && key == 8){
 		consoleComandString = consoleComandString.substr(0, consoleComandString.length() - 1);
 	}
 
 	//dodawanie znakow
-	if (enterPressed && key != 13 && key != 8)
+	if (enterPressed && key != 13 && key != 8) {
 		consoleComandString += key;
+	}
 
 	if (key == 'm' || key == 'M') {
 		if (captureMouse) {
@@ -486,26 +485,27 @@ void OnRender() {
 		if (CHECK_FEATURE_SWITCH && prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()) {
 			string info = "Checking shape (" + to_string(prezentacjaFigurNaStarcieIndex + 1) + ") - ";
 			if (prezentacjaFigurNaStarcieEtap == 0) {
-				info += "base connection";
+				info += "(x,z) B - base projection";
 				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getBase(), 0, 1, 0);
 			}
 			if (prezentacjaFigurNaStarcieEtap == 1) {
-				info += "side1 connection";
+				info += "(x, y) F - front projection";
 				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide1(), 0, 1, 0);
 			}
 			if (prezentacjaFigurNaStarcieEtap == 2) {
-				info += "side2 connection";
+				info += "(y,z) S - side projection";
 				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide2(), 0, 1, 0);
 			}
 			if (prezentacjaFigurNaStarcieEtap == 3) {
-				info += "3d shape";
+				info += "(x,y,z) 3D shape";
 				DrawShape(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex], 1.0, 0.0, 1.0);
 			}
 			BetterDraw(-64, 58, info, WHITE);
 
 		}
 	else {
-		//Rysowanie figury
+
+	//Rysowanie figury
 	// glowna figura
 	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
 	
