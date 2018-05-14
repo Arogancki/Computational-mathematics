@@ -166,8 +166,17 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 
 	if (key == 13) { // 13 == Enter
-		if (++prezentacjaFigurNaStarcieEtap >= 3) {
-			prezentacjaFigurNaStarcieIndex++;
+		if (prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()){
+			player.pos.x = 0.0f;
+			player.pos.y = 1.0f;
+			player.pos.z = 4.0f;
+
+			player.dir.x = 0.0f;
+			player.dir.y = 0.0f;
+			player.dir.z = -1.0f;
+			if (++prezentacjaFigurNaStarcieEtap > 3) {
+				prezentacjaFigurNaStarcieIndex++;
+			}
 		}
 	}
 		// Console that allows to write etc. 
@@ -437,6 +446,7 @@ void DrawShape2D(std::vector<Point2D> _v, double r, double g, double b) {
 	for (int i = 0; i < _v.size() - 1; i++) {
 		DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i+1].x, _v[i+1].y, 0.0), r, g, b);
 	}
+	DrawLine(Point3D(_v[_v.size() - 1].x, _v[_v.size() - 1].y, 0.0), Point3D(_v[0].x, _v[0].y, 0.0), (r*-1.0)+1.0, (g*-1.0)+1.0, (b*-1.0)+1.0);
 }
 
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
