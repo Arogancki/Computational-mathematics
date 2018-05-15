@@ -2,7 +2,6 @@
 #include "FileParser.h"
 
 #define debug true
-#define CHECK_FEATURE_SWITCH false
 
 #pragma region Zmienne globalne
 SCameraState player;
@@ -25,7 +24,8 @@ GLuint Points;
 
 bool axisViewSwtich = true;
 bool methodResultsView = true;
-
+bool methodResultsExtra = true;
+bool CHECK_FEATURE_SWITCH = true;
 
 #pragma endregion
 
@@ -188,6 +188,10 @@ void OnKeyDown(unsigned char key, int x, int y) {
 
 	if (key == '2') {
 		methodResultsView = !methodResultsView;
+	}
+
+	if (key == '3') {
+		methodResultsExtra = !methodResultsExtra;
 	}
 
 	// Console that allows to write etc. 
@@ -454,7 +458,7 @@ void DrawShape2D(std::vector<Point2D> _v, double r, double g, double b) {
 	for (int i = 0; i < _v.size() - 1; i++) {
 		DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i + 1].x, _v[i + 1].y, 0.0), r, g, b);
 	}
-	DrawLine(Point3D(_v[_v.size() - 1].x, _v[_v.size() - 1].y, 0.0), Point3D(_v[0].x, _v[0].y, 0.0), (r*-1.0) + 1.0, (g*-1.0) + 1.0, (b*-1.0) + 1.0);
+	DrawLine(Point3D(_v[_v.size() - 1].x, _v[_v.size() - 1].y, 0.0), Point3D(_v[0].x, _v[0].y, 0.0), r, g, b);
 }
 
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
@@ -585,6 +589,9 @@ void OnRender() {
 				double volume = 0.0;
 				int i = -1;
 				for (rectangleMethodResults &rrrr : resultsR) {
+					if (methodResultsExtra) {
+						DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2);
+					}
 					i++;
 					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
 					if (shapeConfig->shapes[i].getIncludes()) {

@@ -366,6 +366,7 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 	std::vector<std::vector<Point2D>> rS1 = rectangleMethod2d(this->side1, n);
 	std::vector<std::vector<Point2D>> rS2 = rectangleMethod2d(this->side2, n);
 	std::vector<Shape> rectangles = std::vector<Shape>();
+	std::vector<Shape> projections = std::vector<Shape>();
 
 	double field = 0.0;
 
@@ -375,6 +376,7 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 		int amonth = (int)(baseLenght / side2Lenght);
 		
 		double distance = baseLenght / amonth;
+
 		for (int j = 0; j < amonth; j++) {
 			ShapeBuilder shapeBuilder = ShapeBuilder();
 			
@@ -418,38 +420,45 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 			field += s.getFieldOfCube();
 			rectangles.push_back(s);
 		}
-		/*
-		// cienie rzutow
-		// podstawa
-		shapeBuilder.add(rB[i][0].x, 0, rB[i][0].y);
-		shapeBuilder.add(rB[i][1].x, 0, rB[i][1].y);
-		shapeBuilder.add(rB[i][2].x, 0, rB[i][2].y);
-		shapeBuilder.add(rB[i][3].x, 0, rB[i][3].y);
-		shapeBuilder.add(rB[i][0].x, 0, rB[i][0].y);
+		
+		if (true) {
+			// cienie rzutow
+			// podstawa
+			ShapeBuilder shapeBuilder1 = ShapeBuilder();
+			shapeBuilder1.add(rB[i][0].x, 0, rB[i][0].y);
+			shapeBuilder1.add(rB[i][1].x, 0, rB[i][1].y);
+			shapeBuilder1.add(rB[i][2].x, 0, rB[i][2].y);
+			shapeBuilder1.add(rB[i][3].x, 0, rB[i][3].y);
+			shapeBuilder1.add(rB[i][0].x, 0, rB[i][0].y);
+			Shape s1 = shapeBuilder1.getShape(true, false);
 
-		// side1
-		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
-		shapeBuilder.add(rS1[i][1].x, rS1[i][1].y, 0.0);
-		shapeBuilder.add(rS1[i][2].x, rS1[i][2].y, 0.0);
-		shapeBuilder.add(rS1[i][3].x, rS1[i][3].y, 0.0);
-		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
-		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
-		
-		// side2
-		shapeBuilder.add(0, rS2[i][0].y, rS2[i][0].x);
-		shapeBuilder.add(0, rS2[i][1].y, rS2[i][1].x);
-		shapeBuilder.add(0, rS2[i][2].y, rS2[i][2].x);
-		shapeBuilder.add(0, rS2[i][3].y, rS2[i][3].x);
-		shapeBuilder.add(0, rS2[i][0].y, rS2[i][0].x);
-		*/
-		//Shape s = shapeBuilder.getShape(true, false);
-		// field += s.getFieldOfCube();
-		
-		//rectangles.push_back(s);
+			// side1
+			ShapeBuilder shapeBuilder2 = ShapeBuilder();
+			shapeBuilder2.add(rS1[i][0].x, rS1[i][0].y, 0.0);
+			shapeBuilder2.add(rS1[i][1].x, rS1[i][1].y, 0.0);
+			shapeBuilder2.add(rS1[i][2].x, rS1[i][2].y, 0.0);
+			shapeBuilder2.add(rS1[i][3].x, rS1[i][3].y, 0.0);
+			shapeBuilder2.add(rS1[i][0].x, rS1[i][0].y, 0.0);
+			shapeBuilder2.add(rS1[i][0].x, rS1[i][0].y, 0.0);
+			Shape s2 = shapeBuilder2.getShape(true, false);
+
+			// side2
+			ShapeBuilder shapeBuilder3 = ShapeBuilder();
+			shapeBuilder3.add(0, rS2[i][0].y, rS2[i][0].x);
+			shapeBuilder3.add(0, rS2[i][1].y, rS2[i][1].x);
+			shapeBuilder3.add(0, rS2[i][2].y, rS2[i][2].x);
+			shapeBuilder3.add(0, rS2[i][3].y, rS2[i][3].x);
+			shapeBuilder3.add(0, rS2[i][0].y, rS2[i][0].x);
+			Shape s3 = shapeBuilder3.getShape(true, false);
+
+			projections.push_back(s1);
+			projections.push_back(s2);
+			projections.push_back(s3);
+		}
 		
 	}
 
-	return rectangleMethodResults(field, rectangles);
+	return rectangleMethodResults(field, rectangles, projections);
 }
 
 monteCarloMethodResults Shape::monteCarloMethod(int _numberOfPoints)
@@ -1357,9 +1366,21 @@ rectangleMethodResults::rectangleMethodResults(double _volume, std::vector<Shape
 	this->rectangles = _rectangles;
 }
 
+rectangleMethodResults::rectangleMethodResults(double _volume, std::vector<Shape> _rectangles, std::vector<Shape> _projections)
+{
+	this->volume = _volume;
+	this->rectangles = _rectangles;
+	this->projections = _projections;
+}
+
 std::vector<Shape> rectangleMethodResults::getRectangles()
 {
 	return this->rectangles;
+}
+
+std::vector<Shape> rectangleMethodResults::getProjectins()
+{
+	return this->projections;
 }
 
 double monteCarloMethodResults::getVolume()

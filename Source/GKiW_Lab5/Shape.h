@@ -125,10 +125,13 @@ class rectangleMethodResults {
 private:
 	double volume;
 	std::vector<Shape> rectangles;
+	std::vector<Shape> projections;
 public:
 	double getVolume();
+	rectangleMethodResults(double, std::vector<Shape>, std::vector<Shape>);
 	rectangleMethodResults(double, std::vector<Shape>);
 	std::vector<Shape> getRectangles();
+	std::vector<Shape> getProjectins();
 }; 
 
 class monteCarloMethodResults {
