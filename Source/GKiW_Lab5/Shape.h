@@ -78,6 +78,7 @@ public:
 	CubeBorder getCubeAroundPointRange();
 	double getFieldOfCube();
 	bool isInside(Point3D);
+	static double getMax_size();
 };
 
 class ShapeBuilder {

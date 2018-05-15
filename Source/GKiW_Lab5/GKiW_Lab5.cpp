@@ -2,6 +2,7 @@
 #include "FileParser.h"
 
 #define debug true
+#define CHECK_FEATURE_SWITCH false
 
 #pragma region Zmienne globalne
 SCameraState player;
@@ -20,8 +21,11 @@ float mouseSensitivity = .15f;
 
 int prezentacjaFigurNaStarcieIndex = 0;
 int prezentacjaFigurNaStarcieEtap = 0;
-bool CHECK_FEATURE_SWITCH = true;
 GLuint Points;
+
+bool axisViewSwtich = true;
+bool methodResultsView = true;
+
 
 #pragma endregion
 
@@ -95,7 +99,7 @@ int main(int argc, char* argv[])
 	player.dir.y = 0.0f;
 	player.dir.z = -1.0f;
 
-	player.speed = .4f;
+	player.speed = .5f;
 
 	glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
 	mouseX = glutGet(GLUT_WINDOW_WIDTH) / 2;
@@ -118,7 +122,7 @@ int main(int argc, char* argv[])
 	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
 	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
 
-	
+
 
 	CalculateVolume();
 
@@ -139,10 +143,10 @@ int main(int argc, char* argv[])
 	return 0;
 	/*
 	}catch (const std::exception exceptional_result) {
-		std::cout << exceptional_result.what() << '\n';
-		string x;
-		cin >> x;
-		return -1;
+	std::cout << exceptional_result.what() << '\n';
+	string x;
+	cin >> x;
+	return -1;
 	}
 	*/
 }
@@ -177,10 +181,17 @@ void OnKeyDown(unsigned char key, int x, int y) {
 			prezentacjaFigurNaStarcieIndex++;
 		}
 	}
-	
+
+	if (key == '1') {
+		axisViewSwtich = !axisViewSwtich;
+	}
+
+	if (key == '2') {
+		methodResultsView = !methodResultsView;
+	}
 
 	// Console that allows to write etc. 
-	if (consoleComandString != ""){
+	if (consoleComandString != "") {
 		switch (consoleComandString[0])
 		{
 		case 'p':
@@ -199,7 +210,7 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 
 	//backspace
-	if (enterPressed && key == 8){
+	if (enterPressed && key == 8) {
 		consoleComandString = consoleComandString.substr(0, consoleComandString.length() - 1);
 	}
 
@@ -221,7 +232,7 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 }
 
-void OnKeyUp(unsigned char key, int x, int y){
+void OnKeyUp(unsigned char key, int x, int y) {
 	keystate[key] = false;
 }
 
@@ -236,17 +247,17 @@ void MouseButton(int button, int state, int x, int y)
 	{
 		/*if (state == GLUT_DOWN && Player_Ammo_Amount > 0)
 		{
-			shooting = true;
+		shooting = true;
 		}
 
 		if (state == GLUT_UP)
 		{
-			shooting = false;
+		shooting = false;
 		}
 
 		if (shooting)
 		{
-			glutTimerFunc(17, BulletFireLogic, 0);
+		glutTimerFunc(17, BulletFireLogic, 0);
 		}*/
 	}
 }
@@ -275,7 +286,7 @@ void CalculateVolume() {
 			resultsM.push_back(mcmr);
 		}
 	}
-	
+
 	Points = glGenLists(1);
 
 	if (shapeConfig->type == 'M') {
@@ -296,7 +307,7 @@ void OnTimer(int id) {
 
 	glutTimerFunc(17, OnTimer, 0);
 
-	#pragma region Ruch kamery
+#pragma region Ruch kamery
 
 	if (captureMouse) {
 		player.velRY = -mouseSensitivity * (glutGet(GLUT_WINDOW_WIDTH) / 2 - mouseX);
@@ -363,11 +374,11 @@ void OnTimer(int id) {
 	player.velM /= 1.2;
 	player.velS /= 1.2;
 
-	#pragma endregion
+#pragma endregion
 
 }
 
-void DrawGUI() 
+void DrawGUI()
 {
 	std::stringstream s;
 
@@ -416,8 +427,6 @@ void DrawGUI()
 #pragma endregion
 }
 
-
-
 void DrawLine(Point3D p1, Point3D p2, double r, double g, double b) {
 	glLineWidth(2.0);
 	float m_amb[] = { r, g, b, 1.0f };
@@ -443,9 +452,9 @@ void DrawShape(Shape shape, double r, double g, double b) {
 void DrawShape2D(std::vector<Point2D> _v, double r, double g, double b) {
 	// zakladamy ze kazdy shape ma conajmniej dlugosc == 3
 	for (int i = 0; i < _v.size() - 1; i++) {
-		DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i+1].x, _v[i+1].y, 0.0), r, g, b);
+		DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i + 1].x, _v[i + 1].y, 0.0), r, g, b);
 	}
-	DrawLine(Point3D(_v[_v.size() - 1].x, _v[_v.size() - 1].y, 0.0), Point3D(_v[0].x, _v[0].y, 0.0), (r*-1.0)+1.0, (g*-1.0)+1.0, (b*-1.0)+1.0);
+	DrawLine(Point3D(_v[_v.size() - 1].x, _v[_v.size() - 1].y, 0.0), Point3D(_v[0].x, _v[0].y, 0.0), (r*-1.0) + 1.0, (g*-1.0) + 1.0, (b*-1.0) + 1.0);
 }
 
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
@@ -453,7 +462,42 @@ void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
 		if (shape.getIncludes())
 			DrawShape(shape, r, g, b);
 		else
-			DrawShape(shape, (r*-1.0)+1, (g*-1.0)+1, (b*-1.0)+1);
+			DrawShape(shape, (r*-1.0) + 1, (g*-1.0) + 1, (b*-1.0) + 1);
+}
+
+void showAxis() {
+	
+	int max = FileParser::getMax_size() + 2;
+	DrawLine(Point3D(0, 0, 0), Point3D(max-1, 0, 0), 1, 1, 1);
+	for (int i = 1; i < max; i++) {
+		glPushMatrix();
+		glColor4ub(255, 255, 0, 255);
+		glRasterPos3f(i, 0.0f, 0.0f);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'x');
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (char)(i+48));
+		glPopMatrix();
+	}
+
+	DrawLine(Point3D(0, 0, 0), Point3D(0, max-1, 0), 1, 1, 1);
+	for (int i = 1; i < max; i++) {
+		glPushMatrix();
+		glColor4ub(255, 255, 0, 255);
+		glRasterPos3f(0, i, 0.0f);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'y');
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (char)(i + 48));
+		glPopMatrix();
+	}
+
+	DrawLine(Point3D(0, 0, 0), Point3D(0, 0, max-1), 1, 1, 1);
+	for (int i = 1; i < max; i++) {
+		glPushMatrix();
+		glColor4ub(255, 255, 0, 255);
+		glRasterPos3f(0, 0, i);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'z');
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (char)(i + 48));
+		glPopMatrix();
+	}
+	
 }
 
 void OnRender() {
@@ -468,101 +512,108 @@ void OnRender() {
 		0.0f, 1.0f, 0.0f
 	);
 
-	#pragma region Swiatlo
-	
-		float l0_amb[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-		float l0_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float l0_spe[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float l0_pos[] = { 0.0f, 10.0f, 0.0f, 1.0f };
-		glLightfv(GL_LIGHT0, GL_AMBIENT, l0_amb);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_dif);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, l0_spe);
-		glLightfv(GL_LIGHT0, GL_POSITION, l0_pos);
+#pragma region Swiatlo
 
-	#pragma endregion
+	float l0_amb[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	float l0_dif[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float l0_spe[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float l0_pos[] = { 0.0f, 10.0f, 0.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, l0_amb);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_dif);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, l0_spe);
+	glLightfv(GL_LIGHT0, GL_POSITION, l0_pos);
 
-		// Rysowanie prezentacjaFigurNaStarcieIndex
-		if (CHECK_FEATURE_SWITCH && prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()) {
-			string info = "Checking shape (" + to_string(prezentacjaFigurNaStarcieIndex + 1) + ") - ";
-			if (prezentacjaFigurNaStarcieEtap == 0) {
-				info += "(x,z) B - base projection";
-				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getBase(), 0, 1, 0);
-			}
-			if (prezentacjaFigurNaStarcieEtap == 1) {
-				info += "(x, y) F - front projection";
-				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide1(), 0, 1, 0);
-			}
-			if (prezentacjaFigurNaStarcieEtap == 2) {
-				info += "(y,z) S - side projection";
-				DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide2(), 0, 1, 0);
-			}
-			if (prezentacjaFigurNaStarcieEtap == 3) {
-				info += "(x,y,z) 3D shape";
-				DrawShape(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex], 1.0, 0.0, 1.0);
-			}
-			BetterDraw(-64, 58, info, WHITE);
+#pragma endregion
 
+	if (axisViewSwtich)
+		showAxis();
+
+	// Rysowanie prezentacjaFigurNaStarcieIndex
+	if (CHECK_FEATURE_SWITCH && prezentacjaFigurNaStarcieIndex < shapeConfig->shapes.size()) {
+		string info = "Checking shape (" + to_string(prezentacjaFigurNaStarcieIndex + 1) + ") - ";
+		if (prezentacjaFigurNaStarcieEtap == 0) {
+			info += "(x,z) B - base projection";
+			DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getBase(), 0, 1, 0);
 		}
+		if (prezentacjaFigurNaStarcieEtap == 1) {
+			info += "(x, y) F - front projection";
+			DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide1(), 0, 1, 0);
+		}
+		if (prezentacjaFigurNaStarcieEtap == 2) {
+			info += "(y,z) S - side projection";
+			DrawShape2D(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex].getSide2(), 0, 1, 0);
+		}
+		if (prezentacjaFigurNaStarcieEtap == 3) {
+			info += "(x,y,z) 3D shape";
+			DrawShape(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex], 1.0, 0.0, 1.0);
+		}
+		BetterDraw(-64, 58, info, WHITE);
+
+	}
 	else {
 
-	//Rysowanie figury
-	// glowna figura
-	DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
-	
-	int i = -1;
-	volume = 0;
-	// figura opatulujaca
-	if (shapeConfig->type == 'M') {
-		i = -1;
-		for (Shape &sssss : outters) {
-			i++;
-			DrawShape(sssss, 1.0, 0.0, 1.0);
-			for (auto &result : resultsM) {
-				if (shapeConfig->shapes[i].getIncludes()) {
-					volume += result.getVolume();
+		//Rysowanie figury
+		// glowna figura
+		DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
+
+
+		int i = -1;
+		volume = 0;
+		// figura opatulujaca
+		if (methodResultsView) {
+			if (shapeConfig->type == 'M') {
+				i = -1;
+				for (Shape &sssss : outters) {
+					i++;
+					DrawShape(sssss, 1.0, 0.0, 1.0);
+					for (auto &result : resultsM) {
+						if (shapeConfig->shapes[i].getIncludes()) {
+							volume += result.getVolume();
+						}
+						else {
+							volume -= result.getVolume();
+						}
+					}
 				}
-				else {
-					volume -= result.getVolume();
+				volume = round(volume * 10000.0) / 10000.0;
+
+				glCallList(Points);
+			}
+
+			// dla methody kwadratow rysowanie
+			if (shapeConfig->type == 'R') {
+				double volume = 0.0;
+				int i = -1;
+				for (rectangleMethodResults &rrrr : resultsR) {
+					i++;
+					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
+					if (shapeConfig->shapes[i].getIncludes()) {
+						volume += rrrr.getVolume();
+					}
+					else {
+						volume -= rrrr.getVolume();
+					}
 				}
+				std::ostringstream s;
+				s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
+				int x = -64;
+				int y = 58;
+				BetterDraw(x, y, s.str(), WHITE);
 			}
 		}
-		volume = round(volume * 10000.0) / 10000.0;
 
-		glCallList(Points);
-	}
-	
-	// dla methody kwadratow rysowanie
-	if (shapeConfig->type == 'R') {
-		double volume = 0.0;
-		int i = -1;
-		for (rectangleMethodResults &rrrr : resultsR) {
-			i++;
-			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
-			if (shapeConfig->shapes[i].getIncludes()) {
-				volume += rrrr.getVolume();
+		for (auto point : points) {
+			if (shapeConfig->shapes.front().isInside(point)) {
+				DrawPoint(point, 0, 1, 0);
 			}
 			else {
-				volume -= rrrr.getVolume();
+				DrawPoint(point, 1, 0, 0);
 			}
 		}
-		std::ostringstream s;
-		s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
-		int x = -64;
-		int y = 58;
-		BetterDraw(x, y, s.str(), WHITE);
+
+		DrawGUI();
 	}
 
-			for (auto point : points) {
-				if (shapeConfig->shapes.front().isInside(point)) {
-					DrawPoint(point, 0, 1, 0);
-				}
-				else {
-					DrawPoint(point, 1, 0, 0);
-				}
-			}
-
-			DrawGUI();
-		}
 
 	glutSwapBuffers();
 	glFlush();
@@ -574,7 +625,7 @@ void OnReshape(int width, int height) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glViewport(0, 0, width, height);
-	gluPerspective(60.0f, (float) width / height, .01f, 100.0f);
+	gluPerspective(60.0f, (float)width / height, .01f, 100.0f);
 }
 
 // rysowanie tekstu z neta!
@@ -605,7 +656,7 @@ void drawText(float x, float y, std::string st)
 void BetterDraw(float x, float y, std::string message, color color) {
 	glColor3f(color.r, color.g, color.b);
 	drawText(x, y, message);
-	
+
 	// Shadow Color 0 0 0 -> Black
 	glColor3f(0, 0, 0);
 	drawText(x - 0.25f, y, message);

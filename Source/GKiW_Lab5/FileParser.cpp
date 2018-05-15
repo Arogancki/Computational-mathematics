@@ -117,6 +117,11 @@ ParsedData FileParser::parse(std::string filePath)
 	return ParsedData(type, value, shapes);
 }
 
+double FileParser::getMax_size()
+{
+	return Shape::getMax_size();
+}
+
 ParsedData::ParsedData(char _type, int _value, std::vector<Shape> _shapes)
 {
 	type = _type;

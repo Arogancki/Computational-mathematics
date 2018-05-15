@@ -9,10 +9,11 @@
 #define PointOutside Point2D(-1,-1)
 #define M_PI 3.14159265358979323846
 
-#define max_size 1
+#define max_size 4
 extern float GetRandomFloat(float min = 0, float max = 1);
 
 double funGetDistance(double, double, double, double);
+
 
 Shape funMakeRectangle(double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
 	ShapeBuilder shapeBuilder = ShapeBuilder();
@@ -369,16 +370,62 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 	double field = 0.0;
 
 	for (int i = 0; i < rB.size(); i++) {
-		ShapeBuilder shapeBuilder = ShapeBuilder();
+		double baseLenght = funGetDistance(Point2D(rB[i][1].x, rB[i][1].y), Point2D(rB[i][2].x, rB[i][2].y));
+		double side2Lenght = funGetDistance(Point2D(rS2[i][0].x, rS2[i][0].y), Point2D(rS2[i][1].x, rS2[i][1].y));
+		int amonth = (int)(baseLenght / side2Lenght);
+		
+		double distance = baseLenght / amonth;
+		for (int j = 0; j < amonth; j++) {
+			ShapeBuilder shapeBuilder = ShapeBuilder();
+			
+			Point2D floor1 = funGetPointAway(rS1[i][0].x, rS1[i][0].y, rB[i][3].x, rB[i][3].y, distance*j);
+			Point2D floor2 = funGetPointAway(rS1[i][1].x, rS1[i][1].y, rB[i][2].x, rB[i][2].y, distance*j);
+			Point2D floor3 = funGetPointAway(rS1[i][1].x, rS1[i][1].y, rB[i][2].x, rB[i][2].y, distance*(j + 1));
+			Point2D floor4 = funGetPointAway(rS1[i][0].x, rS1[i][0].y, rB[i][3].x, rB[i][3].y, distance*(j + 1));
 
-		// podstawa
+			double heightS1 = funGetDistance(rS1[i][1], rS1[i][2]);
+			double heightS2 = funGetDistance(rS2[j][1], rS2[j][2]);
+			double floorYStart, floorYEnd;
+			if (heightS1 < heightS2) {
+				floorYStart = rS1[i][1].y;
+				floorYEnd = rS1[i][2].y;
+			}
+			else {
+				floorYStart = rS2[j][1].y;
+				floorYEnd = rS2[j][2].y;
+			}
+
+			shapeBuilder.add(floor1.x, floorYStart, floor1.y);
+			shapeBuilder.add(floor2.x, floorYStart, floor2.y);
+			shapeBuilder.add(floor3.x, floorYStart, floor3.y);
+			shapeBuilder.add(floor4.x, floorYStart, floor4.y);
+			shapeBuilder.add(floor1.x, floorYStart, floor1.y);
+
+			shapeBuilder.add(floor1.x, floorYEnd, floor1.y);
+			shapeBuilder.add(floor2.x, floorYEnd, floor2.y); 
+			shapeBuilder.add(floor2.x, floorYStart, floor2.y);
+			shapeBuilder.add(floor2.x, floorYEnd, floor2.y);
+									   
+			shapeBuilder.add(floor3.x, floorYEnd, floor3.y);
+			shapeBuilder.add(floor3.x, floorYStart, floor3.y);
+			shapeBuilder.add(floor3.x, floorYEnd, floor3.y);
+			shapeBuilder.add(floor4.x, floorYEnd, floor4.y); 
+			shapeBuilder.add(floor4.x, floorYStart, floor4.y);
+			shapeBuilder.add(floor4.x, floorYEnd, floor4.y);
+			shapeBuilder.add(floor1.x, floorYEnd, floor1.y);
+
+			Shape s = shapeBuilder.getShape(true, false);
+			field += s.getFieldOfCube();
+			rectangles.push_back(s);
+		}
 		/*
+		// cienie rzutow
+		// podstawa
 		shapeBuilder.add(rB[i][0].x, 0, rB[i][0].y);
 		shapeBuilder.add(rB[i][1].x, 0, rB[i][1].y);
 		shapeBuilder.add(rB[i][2].x, 0, rB[i][2].y);
 		shapeBuilder.add(rB[i][3].x, 0, rB[i][3].y);
 		shapeBuilder.add(rB[i][0].x, 0, rB[i][0].y);
-		*/
 
 		// side1
 		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
@@ -386,36 +433,20 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 		shapeBuilder.add(rS1[i][2].x, rS1[i][2].y, 0.0);
 		shapeBuilder.add(rS1[i][3].x, rS1[i][3].y, 0.0);
 		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
-
-		/*
-		shapeBuilder.add(rB[i][0].x, rS1[i][0].y, rB[i][0].y);
-		shapeBuilder.add(rB[i][1].x, rS1[i][1].y, rB[i][1].y);
-		shapeBuilder.add(rB[i][2].x, rS1[i][1].y, rB[i][2].y);
-		shapeBuilder.add(rB[i][3].x, rS1[i][0].y, rB[i][3].y);
+		shapeBuilder.add(rS1[i][0].x, rS1[i][0].y, 0.0);
 		
-		shapeBuilder.add(rB[i][0].x, rS1[i][0].y, rB[i][0].y);
-		shapeBuilder.add(rB[i][0].x, rS1[i][3].y, rB[i][0].y);
-		
-		shapeBuilder.add(rB[i][1].x, rS1[i][2].y, rB[i][1].y);
-		shapeBuilder.add(rB[i][1].x, rS1[i][1].y, rB[i][1].y);
-		shapeBuilder.add(rB[i][1].x, rS1[i][2].y, rB[i][1].y);
-
-		
-		shapeBuilder.add(rB[i][2].x, rS1[i][2].y, rB[i][2].y);
-		shapeBuilder.add(rB[i][2].x, rS1[i][1].y, rB[i][2].y);
-		shapeBuilder.add(rB[i][2].x, rS1[i][2].y, rB[i][2].y);
-		
-		shapeBuilder.add(rB[i][3].x, rS1[i][3].y, rB[i][3].y);
-		shapeBuilder.add(rB[i][3].x, rS1[i][1].y, rB[i][3].y);
-		shapeBuilder.add(rB[i][3].x, rS1[i][3].y, rB[i][3].y);
-
-		shapeBuilder.add(rB[i][0].x, rS1[i][3].y, rB[i][0].y);
-
+		// side2
+		shapeBuilder.add(0, rS2[i][0].y, rS2[i][0].x);
+		shapeBuilder.add(0, rS2[i][1].y, rS2[i][1].x);
+		shapeBuilder.add(0, rS2[i][2].y, rS2[i][2].x);
+		shapeBuilder.add(0, rS2[i][3].y, rS2[i][3].x);
+		shapeBuilder.add(0, rS2[i][0].y, rS2[i][0].x);
 		*/
-		Shape s = shapeBuilder.getShape(true, false);
-		// field += s.getFieldOfCube2();
-
-		rectangles.push_back(s);
+		//Shape s = shapeBuilder.getShape(true, false);
+		// field += s.getFieldOfCube();
+		
+		//rectangles.push_back(s);
+		
 	}
 
 	return rectangleMethodResults(field, rectangles);
@@ -797,6 +828,8 @@ CubeBorder Shape::getCubeAroundPointRange()
 }
 
 double Shape::getFieldOfCube() {
+	if (this->base.size() < 3 || this->side1.size() < 3)
+		return 0.0;
 	double width = funGetDistance(this->base[0], this->base[1]);
 	double length = funGetDistance(this->base[1], this->base[2]);
 	double hight = funGetDistance(this->base[0], this->side1[2]);
@@ -822,6 +855,11 @@ bool Shape::isInside(Point3D _pointToCheck)
 		return true;
 	}
 	return false;
+}
+
+double Shape::getMax_size()
+{
+	return max_size;
 }
 
 std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>& _v, int n)
@@ -859,6 +897,11 @@ std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>&
 	if (funAreEqual(0.0, max)) {
 		throw "Rectangle method - not enought points!";
 	}
+	
+	// TODO narazie wyniki najdluzszej podstwy sa olewane i brany jest Pierwszy rozmiar
+	index1 = 0;
+	index2 = 1;
+
 	Point2D first = _v[index1];
 	Point2D last = _v[index2];
 	Point2D firstGlobal = first;
@@ -916,11 +959,10 @@ std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>&
 			Point2D basePoint = funGetPointAway(first, tempLast, currentStep);
 			Point2D highPoint = basePoint;
 
-			// ta funckja ponizej zle policzyla dla kolejnego wezla
 			highPoint.y = funGetYfromPoints(prevPoint.x, prevPoint.y, currentPoint.x, currentPoint.y, highPoint.x);
 
-			double distanceToHigh = funGetDistance(first, highPoint);
-			double distanceToCurent = funGetDistance(first, currentPoint);
+			double distanceToHigh = funGetDistance(prevPoint, highPoint);
+			double distanceToCurent = funGetDistance(prevPoint, currentPoint);
 			if (distanceToHigh > distanceToCurent) {
 				// should be next point already
 				break;

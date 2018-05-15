@@ -20,4 +20,5 @@ private:
 	static Shape readShape(std::ifstream&);
 public:
 	static ParsedData parse(std::string);
+	static double getMax_size();
 };
