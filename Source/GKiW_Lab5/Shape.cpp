@@ -9,7 +9,7 @@
 #define PointOutside Point2D(-1,-1)
 #define M_PI 3.14159265358979323846
 
-#define max_size 4
+#define max_size 5
 extern float GetRandomFloat(float min = 0, float max = 1);
 
 double funGetDistance(double, double, double, double);
@@ -370,14 +370,14 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 
 	double field = 0.0;
 
-	for (int i = 0; i < rB.size(); i++) {
+	for (int i = 0; i < rB.size() && i < rS1.size() && i < rS2.size(); i++) {
 		double baseLenght = funGetDistance(Point2D(rB[i][1].x, rB[i][1].y), Point2D(rB[i][2].x, rB[i][2].y));
 		double side2Lenght = funGetDistance(Point2D(rS2[i][0].x, rS2[i][0].y), Point2D(rS2[i][1].x, rS2[i][1].y));
 		int amonth = (int)(baseLenght / side2Lenght);
 		
 		double distance = baseLenght / amonth;
 
-		for (int j = 0; j < amonth; j++) {
+		for (int j = 0; j < amonth && j < rS2.size(); j++) {
 			ShapeBuilder shapeBuilder = ShapeBuilder();
 			
 			Point2D floor1 = funGetPointAway(rS1[i][0].x, rS1[i][0].y, rB[i][3].x, rB[i][3].y, distance*j);
@@ -417,7 +417,8 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 			shapeBuilder.add(floor1.x, floorYEnd, floor1.y);
 
 			Shape s = shapeBuilder.getShape(true, false);
-			field += s.getFieldOfCube();
+			double fieldS = s.getFieldOfCube();
+			field += fieldS;
 			rectangles.push_back(s);
 		}
 		
@@ -458,7 +459,7 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 		
 	}
 
-	return rectangleMethodResults(field, rectangles, projections);
+	return rectangleMethodResults(this->includes, field, rectangles, projections);
 }
 
 monteCarloMethodResults Shape::monteCarloMethod(int _numberOfPoints)
@@ -841,10 +842,9 @@ double Shape::getFieldOfCube() {
 		return 0.0;
 	double width = funGetDistance(this->base[0], this->base[1]);
 	double length = funGetDistance(this->base[1], this->base[2]);
-	double hight = funGetDistance(this->base[0], this->side1[2]);
+	double hight = funGetDistance(this->points[4], this->points[5]);
 	return width * length * hight;
 }
-
 
 bool Shape::isInside(Point3D _pointToCheck)
 {
@@ -1103,7 +1103,7 @@ ShapeBuilder::ShapeBuilder()
 Shape ShapeBuilder::getShape(bool _includes, bool doNormalize)
 {
 	if (doNormalize) {
-		normalize(this->points);
+		// normalize(this->points);
 	}
 	for (Point3D &p : this->points) {
 		// check ./shapeBuilderSheme.png for an explaination
@@ -1360,14 +1360,20 @@ double rectangleMethodResults::getVolume()
 	return this->volume;
 }
 
+bool rectangleMethodResults::getIncludes()
+{
+	return this->includes;
+}
+
 rectangleMethodResults::rectangleMethodResults(double _volume, std::vector<Shape> _rectangles)
 {
 	this->volume = _volume;
 	this->rectangles = _rectangles;
 }
 
-rectangleMethodResults::rectangleMethodResults(double _volume, std::vector<Shape> _rectangles, std::vector<Shape> _projections)
+rectangleMethodResults::rectangleMethodResults(bool _includes, double _volume, std::vector<Shape> _rectangles, std::vector<Shape> _projections)
 {
+	this->includes = _includes;
 	this->volume = _volume;
 	this->rectangles = _rectangles;
 	this->projections = _projections;

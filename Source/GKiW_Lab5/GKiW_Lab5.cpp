@@ -178,6 +178,7 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		player.dir.y = 0.0f;
 		player.dir.z = -1.0f;
 		if (++prezentacjaFigurNaStarcieEtap > 3) {
+			prezentacjaFigurNaStarcieEtap = 0;
 			prezentacjaFigurNaStarcieIndex++;
 		}
 	}
@@ -192,6 +193,27 @@ void OnKeyDown(unsigned char key, int x, int y) {
 
 	if (key == '3') {
 		methodResultsExtra = !methodResultsExtra;
+	}
+
+	if (key == 'x' || key == 'X') {
+
+		player.pos.x = 0.0f;
+		player.pos.y = 1.0f;
+		player.pos.z = 4.0f;
+
+		player.dir.x = 0.0f;
+		player.dir.y = 0.0f;
+		player.dir.z = -1.0f;
+	}
+
+	if (key == 'r' || key == 'R') {
+		if (player.speed < 5.0)
+			player.speed += 0.1;
+	}
+
+	if (key == 't' || key == 'T') {
+		if (player.speed > 0.1)
+			player.speed -= 0.1;
 	}
 
 	// Console that allows to write etc. 
@@ -319,28 +341,28 @@ void OnTimer(int id) {
 		glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
 	}
 	if (!enterPressed) {
-		if (keystate['w']) {
+		if (keystate['w'] || keystate['W']) {
 			player.velM = player.speed;
 		}
-		if (keystate['s']) {
+		if (keystate['s'] || keystate['S']) {
 			player.velM = -player.speed;
 		}
-		if (keystate['a']) {
+		if (keystate['a'] || keystate['A']) {
 			player.velS = -player.speed;
 		}
-		if (keystate['d']) {
+		if (keystate['d'] || keystate['D']) {
 			player.velS = player.speed;
 		}
-		if (keystate['q']) {
+		if (keystate['q'] || keystate['Q']) {
 			player.velRY = -player.speed;
 		}
-		if (keystate['e']) {
+		if (keystate['e'] || keystate['E']) {
 			player.velRY = player.speed;
 		}
-		if (keystate['f']) {
+		if (keystate['f'] || keystate['F']) {
 			player.velRX = -player.speed;
 		}
-		if (keystate['c']) {
+		if (keystate['c'] || keystate['C']) {
 			player.velRX = player.speed;
 		}
 	}
@@ -455,8 +477,15 @@ void DrawShape(Shape shape, double r, double g, double b) {
 
 void DrawShape2D(std::vector<Point2D> _v, double r, double g, double b) {
 	// zakladamy ze kazdy shape ma conajmniej dlugosc == 3
-	for (int i = 0; i < _v.size() - 1; i++) {
-		DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i + 1].x, _v[i + 1].y, 0.0), r, g, b);
+	for (int i = 0; i < _v.size(); i++) {
+		glPushMatrix();
+		glColor4ub(255, 255, 0, 255);
+		glRasterPos3f(_v[i].x+0.05, _v[i].y+0.05, 0.0);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (char)(i + 49));
+		glPopMatrix();
+		if (i != _v.size() - 1) {
+			DrawLine(Point3D(_v[i].x, _v[i].y, 0.0), Point3D(_v[i + 1].x, _v[i + 1].y, 0.0), r, g, b);
+		}
 	}
 	DrawLine(Point3D(_v[_v.size() - 1].x, _v[_v.size() - 1].y, 0.0), Point3D(_v[0].x, _v[0].y, 0.0), r, g, b);
 }
@@ -467,6 +496,15 @@ void DrawShapes(std::vector<Shape> shapes, double r, double g, double b) {
 			DrawShape(shape, r, g, b);
 		else
 			DrawShape(shape, (r*-1.0) + 1, (g*-1.0) + 1, (b*-1.0) + 1);
+}
+
+void DrawShapes(std::vector<Shape> shapes, double r, double g, double b, bool negative) {
+	if (negative) {
+		r = (r * -1) + 1;
+		g = (g * -1) + 1;
+		b = (b * -1) + 1;
+	}
+	DrawShapes(shapes, r, g, b);
 }
 
 void showAxis() {
@@ -560,7 +598,6 @@ void OnRender() {
 		// glowna figura
 		DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
 
-
 		int i = -1;
 		volume = 0;
 		// figura opatulujaca
@@ -589,12 +626,13 @@ void OnRender() {
 				double volume = 0.0;
 				int i = -1;
 				for (rectangleMethodResults &rrrr : resultsR) {
+					double negative = !rrrr.getIncludes();
 					if (methodResultsExtra) {
-						DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2);
+						DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2, negative);
 					}
 					i++;
-					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5);
-					if (shapeConfig->shapes[i].getIncludes()) {
+					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5, negative);
+					if (rrrr.getIncludes()) {
 						volume += rrrr.getVolume();
 					}
 					else {
