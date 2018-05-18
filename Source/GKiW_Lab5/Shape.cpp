@@ -9,7 +9,7 @@
 #define PointOutside Point2D(-1,-1)
 #define M_PI 3.14159265358979323846
 
-#define max_size 5
+#define max_size 7
 extern float GetRandomFloat(float min = 0, float max = 1);
 
 double funGetDistance(double, double, double, double);
@@ -495,261 +495,6 @@ monteCarloMethodResults Shape::monteCarloMethod(int _numberOfPoints)
 	return monteCarloMethodResults(hitPoints, missPoints, volueOfShape / volueOfCubeAroundShape, includes);
 }
 
-rectangleMethodResults Shape::rectangleMethod2(int n)
-{
-	// ten sposob nie zadziala dla bardziej skomplikowanych figur
-	// trzeba robic to dla rzutow z wykorzystaniem funGetYfromPoints
-
-	Point3D main = this->points[0];
-	std::vector<Point3D> connectedToMain = std::vector<Point3D>();
-	bool nextIsConnectedToMain = false;
-	int previousIndex = -1;
-	for (Point3D p : this->points) {
-		if (Point3D::areEqual(main, p)) {
-			// the current is a main so the next and the previous is connected
-			nextIsConnectedToMain = true;
-			if (previousIndex != -1 && !Point3D::areEqual(main, this->points[previousIndex]) && !funDoesContain(connectedToMain, this->points[previousIndex])) {
-				connectedToMain.push_back(this->points[previousIndex]);
-			}
-		}
-		else {
-			if (nextIsConnectedToMain) {
-				// the current is connected to main because main was previous
-				if (!funDoesContain(connectedToMain, p)) {
-					connectedToMain.push_back(p);
-				}
-			}
-			nextIsConnectedToMain = false;
-		}
-		previousIndex++;
-	}
-	if (connectedToMain.size() > 3) {
-		throw "To many point connected to main node to use rectangle method!";
-	}
-	if (connectedToMain.size() < 3) {
-		throw "To less point connected to main node to use rectangle method!";
-	}
-
-	// check with connected is x,y,z different
-	std::vector<int> xDifferent = std::vector<int>();
-	std::vector<int> yDifferent = std::vector<int>();
-	std::vector<int> zDifferent = std::vector<int>();
-	for (int i = 0; i < connectedToMain.size(); i++) {
-		bool isInserted = false;
-		if (!funAreEqual(connectedToMain[i].x, main.x)) {
-			isInserted = true;
-			xDifferent.push_back(i);
-		}
-		if (!funAreEqual(connectedToMain[i].y, main.y)) {
-			isInserted = true;
-			yDifferent.push_back(i);
-		}
-		if (!funAreEqual(connectedToMain[i].z, main.z)) {
-			isInserted = true;
-			zDifferent.push_back(i);
-		}
-		if (!isInserted) {
-			throw "(0) Shape volume cannot be calculated with rectangle method!";
-		}
-	}
-
-	// select with one is going to be xnode ynode znode
-	if (xDifferent.size() < 1) {
-		throw "(1) Shape volume cannot be calculated with rectangle method!";
-	}
-	if (yDifferent.size() < 1) {
-		throw "(2) Shape volume cannot be calculated with rectangle method!";
-	}
-	if (zDifferent.size() < 1) {
-		throw "(3) Shape volume cannot be calculated with rectangle method!";
-	}
-	Point3D *xNode = NULL;
-	Point3D *yNode = NULL;
-	Point3D *zNode = NULL;
-	int i = 0;
-	while (true) {
-		// safe error 
-		if (i++ == 100) {
-			throw "(x) Shape volume cannot be calculated with rectangle method!";
-		}
-		// check if any has one left
-		if (xDifferent.size() == 1) {
-			int index = xDifferent[0];
-			xNode = &(connectedToMain[index]);
-			// remove from others
-			xDifferent.clear();
-			std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-			if (positionY != yDifferent.end())
-				yDifferent.erase(positionY);
-			std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-			if (positionZ != zDifferent.end())
-				zDifferent.erase(positionZ);
-			// end remove from others
-		}
-		if (yDifferent.size() == 1) {
-			int index = yDifferent[0];
-			yNode = &(connectedToMain[index]);
-			// remove from others
-			std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-			if (positionX != xDifferent.end())
-				xDifferent.erase(positionX);
-			yDifferent.clear();
-			std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-			if (positionZ != zDifferent.end())
-				zDifferent.erase(positionZ);
-			// end remove from others
-		}
-		if (zDifferent.size() == 1) {
-			int index = zDifferent[0];
-			zNode = &(connectedToMain[index]);
-			// remove from others
-			std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-			if (positionX != xDifferent.end())
-				xDifferent.erase(positionX);
-			std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-			if (positionY != yDifferent.end())
-				yDifferent.erase(positionY);
-			zDifferent.clear();
-			// end remove from others
-		}
-		// check if has something unique
-		for (int index : xDifferent) {
-			std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-			std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-			if (positionY == yDifferent.end() && positionZ == zDifferent.end())
-			{
-				xNode = &(connectedToMain[index]);
-				// remove from others
-				xDifferent.clear();
-				std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-				if (positionY != yDifferent.end())
-					yDifferent.erase(positionY);
-				std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-				if (positionZ != zDifferent.end())
-					zDifferent.erase(positionZ);
-				// end remove from others
-				break;
-			}
-		}
-		for (int index : yDifferent) {
-			std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-			std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-			if (positionX == xDifferent.end() && positionZ == zDifferent.end())
-			{
-				yNode = &(connectedToMain[index]);
-				// remove from others
-				std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-				if (positionX != xDifferent.end())
-					xDifferent.erase(positionX);
-				yDifferent.clear();
-				std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-				if (positionZ != zDifferent.end())
-					zDifferent.erase(positionZ);
-				// end remove from others
-				break;
-			}
-		}
-		for (int index : zDifferent) {
-			std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-			std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-			if (positionX == xDifferent.end() && positionY == yDifferent.end())
-			{
-				zNode = &(connectedToMain[index]);
-				// remove from others
-				std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-				if (positionX != xDifferent.end())
-					xDifferent.erase(positionX);
-				std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-				if (positionY != yDifferent.end())
-					yDifferent.erase(positionY);
-				zDifferent.clear();
-				// end remove from others
-				break;
-			}
-		}
-		// take from one randomly (first)
-		if (xDifferent.size() > 0) {
-			int index = xDifferent[0];
-			xNode = &(connectedToMain[index]);
-			// remove from others
-			xDifferent.clear();
-			std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-			if (positionY != yDifferent.end())
-				yDifferent.erase(positionY);
-			std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-			if (positionZ != zDifferent.end())
-				zDifferent.erase(positionZ);
-			// end remove from others
-		}
-		else if (yDifferent.size() > 0) {
-			int index = yDifferent[0];
-			yNode = &(connectedToMain[index]);
-			// remove from others
-			std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-			if (positionX != xDifferent.end())
-				xDifferent.erase(positionX);
-			yDifferent.clear();
-			std::vector<int>::iterator positionZ = std::find(zDifferent.begin(), zDifferent.end(), index);
-			if (positionZ != zDifferent.end())
-				zDifferent.erase(positionZ);
-			// end remove from others
-		}
-		else if (zDifferent.size() > 0) {
-			int index = zDifferent[0];
-			zNode = &(connectedToMain[index]);
-			// remove from others
-			std::vector<int>::iterator positionX = std::find(xDifferent.begin(), xDifferent.end(), index);
-			if (positionX != xDifferent.end())
-				xDifferent.erase(positionX);
-			std::vector<int>::iterator positionY = std::find(yDifferent.begin(), yDifferent.end(), index);
-			if (positionY != yDifferent.end())
-				yDifferent.erase(positionY);
-			zDifferent.clear();
-		}
-		// if all y x z nodes != null leave the loop
-		if (xNode != NULL && yNode != NULL && zNode != NULL) {
-			break;
-		}
-	}
-	// end select with one is going to be xnode ynode znod
-
-	// get points on lines
-	std::vector<double> x = std::vector<double>();
-	std::vector<double> y = std::vector<double>();
-	std::vector<double> z = std::vector<double>();
-	double xLength = funGetDistance(main.x, xNode->x, main.y, main.y);
-	double yLength = funGetDistance(main.x, main.x, main.y, yNode->y);
-	double zLength = funGetDistance(main.x, main.x, main.z, zNode->z);
-	for (int i = 1; i <= n; i++) {
-		x.push_back((xLength / n)*i);
-	}
-	for (int i = 1; i <= n; i++) {
-		y.push_back((yLength / n)*i);
-	}
-	for (int i = 1; i <= n; i++) {
-		z.push_back((zLength / n)*i);
-	}
-	double cubeVolume = (xLength / n) * (yLength / n) * (zLength / n);
-	double shapeVolume = cubeVolume * x.size() * y.size() * z.size();
-
-	std::vector<Shape> rectangles = std::vector<Shape>();
-	for (int xi = 0; xi < x.size(); xi++) {
-		for (int yi = 0; yi < y.size(); yi++) {
-			for (int zi = 0; zi < z.size(); zi++) {
-				double startX = xi > 0 ? main.x + x[xi - 1] : main.x;
-				double startY = yi > 0 ? main.y + y[yi - 1] : main.y;
-				double startZ = zi > 0 ? main.z + z[zi - 1] : main.z;
-				double endX = main.x + x[xi];
-				double endY = main.y + y[yi];
-				double endZ = main.z + z[zi];
-				rectangles.push_back(funMakeRectangle(startX, endX, startY, endY, startZ, endZ));
-			}
-		}
-	}
-
-	return rectangleMethodResults(shapeVolume, rectangles);
-}
-
 Shape::Shape(bool _includes, std::vector<Point2D> _base, std::vector<Point2D> _side1,
 	std::vector<Point2D> _side2, std::vector<Point3D> _points)
 {
@@ -885,8 +630,9 @@ std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>&
 	}
 
 	int index1 = -1;
-	double max = 0.0;
+	//double max = 0.0;
 	int index2 = -1;
+	/*
 	bool breakflag = false;
 	for (int i = 0; i < _v.size(); i++) {
 		int j = i + 1;
@@ -906,7 +652,7 @@ std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>&
 	if (funAreEqual(0.0, max)) {
 		throw "Rectangle method - not enought points!";
 	}
-	
+	*/
 	// TODO narazie wyniki najdluzszej podstwy sa olewane i brany jest Pierwszy rozmiar
 	index1 = 0;
 	index2 = 1;

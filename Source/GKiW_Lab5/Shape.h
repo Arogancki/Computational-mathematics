@@ -65,7 +65,6 @@ private:
 	bool isInside(std::vector<Point2D>, Line);
 	static Shape getCube(double, double, double, double, double, double);
 public:
-	rectangleMethodResults rectangleMethod2(int);
 	rectangleMethodResults rectangleMethod(int);
 	monteCarloMethodResults monteCarloMethod(int);
 	Shape(bool, std::vector<Point2D>, std::vector<Point2D>, std::vector<Point2D>, std::vector<Point3D>);

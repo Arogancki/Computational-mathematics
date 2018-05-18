@@ -15,6 +15,7 @@ char FileParser::readChar(std::ifstream& _file)
 		|| singleCharacter == '\r' 
 		|| singleCharacter == '\r\n' 
 		|| singleCharacter == '\n\r'
+		|| singleCharacter == '\t'
 	);
 	return singleCharacter;
 }
