@@ -8,6 +8,7 @@
 #define ABS(x) ((x)<0?-(x):(x))
 #define PointOutside Point2D(-1,-1)
 #define M_PI 3.14159265358979323846
+#define STEP_CONST 0.1
 
 #define max_size 7
 extern float GetRandomFloat(float min = 0, float max = 1);
@@ -380,10 +381,10 @@ rectangleMethodResults Shape::rectangleMethod(int n) {
 		for (int j = 0; j < amonth && j < rS2.size(); j++) {
 			ShapeBuilder shapeBuilder = ShapeBuilder();
 			
-			Point2D floor1 = funGetPointAway(rS1[i][0].x, rS1[i][0].y, rB[i][3].x, rB[i][3].y, distance*j);
-			Point2D floor2 = funGetPointAway(rS1[i][1].x, rS1[i][1].y, rB[i][2].x, rB[i][2].y, distance*j);
-			Point2D floor3 = funGetPointAway(rS1[i][1].x, rS1[i][1].y, rB[i][2].x, rB[i][2].y, distance*(j + 1));
-			Point2D floor4 = funGetPointAway(rS1[i][0].x, rS1[i][0].y, rB[i][3].x, rB[i][3].y, distance*(j + 1));
+			Point2D floor1 = funGetPointAway(rB[i][3].x, rB[i][3].y, rS1[i][0].x, rS1[i][0].y, distance*j);
+			Point2D floor2 = funGetPointAway(rB[i][2].x, rB[i][2].y, rS1[i][1].x, rS1[i][1].y, distance*j);
+			Point2D floor3 = funGetPointAway(rB[i][2].x, rB[i][2].y, rS1[i][1].x, rS1[i][1].y, distance*(j + 1));
+			Point2D floor4 = funGetPointAway(rB[i][3].x, rB[i][3].y, rS1[i][0].x, rS1[i][0].y, distance*(j + 1));
 
 			double heightS1 = funGetDistance(rS1[i][1], rS1[i][2]);
 			double heightS2 = funGetDistance(rS2[j][1], rS2[j][2]);
@@ -674,7 +675,7 @@ std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>&
 	double angle = funGetAngle(first, last, tempLast);
 
 	// take ffirst line and devide it into n pieces
-	double step = distance / ((double)n);
+	double step = n==0 ? STEP_CONST : distance / ((double)n);
 	double currentStep = step;
 	int currentIndex = index1 - 1;
 	int poprzedniIndex = index1;
