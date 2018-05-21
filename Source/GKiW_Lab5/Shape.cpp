@@ -8,7 +8,7 @@
 #define ABS(x) ((x)<0?-(x):(x))
 #define PointOutside Point2D(-1,-1)
 #define M_PI 3.14159265358979323846
-#define STEP_CONST 0.1
+#define STEP_CONST 0.5
 
 #define max_size 7
 extern float GetRandomFloat(float min = 0, float max = 1);
@@ -493,7 +493,7 @@ monteCarloMethodResults Shape::monteCarloMethod(int _numberOfPoints)
 	auto size = hitPoints.size();
 	float volueOfShape = volueOfCubeAroundShape * ((float)size / (float)_numberOfPoints);
 
-	return monteCarloMethodResults(hitPoints, missPoints, volueOfShape / volueOfCubeAroundShape, includes);
+	return monteCarloMethodResults(hitPoints, missPoints, volueOfShape, includes);
 }
 
 Shape::Shape(bool _includes, std::vector<Point2D> _base, std::vector<Point2D> _side1,

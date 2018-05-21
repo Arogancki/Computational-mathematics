@@ -21,6 +21,7 @@ float mouseSensitivity = .15f;
 int prezentacjaFigurNaStarcieIndex = 0;
 int prezentacjaFigurNaStarcieEtap = 0;
 GLuint Points;
+GLuint Squares;
 
 bool axisViewSwtich = true;
 bool methodResultsView = true;
@@ -139,6 +140,7 @@ int main(int argc, char* argv[])
 	glutMainLoop();
 
 	glDeleteLists(Points, 1);
+	glDeleteLists(Squares, 1);
 
 	return 0;
 	/*
@@ -183,15 +185,15 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		}
 	}
 
-	if (key == '1') {
+	if (key == 'i' || key == 'I') {
 		axisViewSwtich = !axisViewSwtich;
 	}
 
-	if (key == '2') {
+	if (key == 'o' || key == 'O') {
 		methodResultsView = !methodResultsView;
 	}
 
-	if (key == '3') {
+	if (key == 'p' || key == 'P') {
 		methodResultsExtra = !methodResultsExtra;
 	}
 
@@ -217,22 +219,25 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 
 	// Console that allows to write etc. 
-	if (consoleComandString != "") {
-		switch (consoleComandString[0])
-		{
-		case 'p':
-		case 'P':
-			PointsToShoot = stoi(consoleComandString.substr(1, consoleComandString.length()));
-			CalculateVolume();
-			break;
-		case 'M':
-		case 'm':
-			//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
-			break;
-		default:
-			break;
+	if (key == ' ') {
+		if (consoleComandString != "") {
+			switch (consoleComandString[0])
+			{
+			case 'p':
+			case 'P':
+				PointsToShoot = stoi(consoleComandString.substr(1, consoleComandString.length()));
+				CalculateVolume();
+				break;
+			case 'M':
+			case 'm':
+				//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
+				break;
+			default:
+				break;
+			}
+			consoleComandString.erase();
 		}
-		consoleComandString.erase();
+		enterPressed = !enterPressed;
 	}
 
 	//backspace
@@ -241,7 +246,7 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	}
 
 	//dodawanie znakow
-	if (enterPressed && key != 13 && key != 8) {
+	if (enterPressed && key != 13 && key != 8 && key != ' ') {
 		consoleComandString += key;
 	}
 
@@ -316,16 +321,16 @@ void CalculateVolume() {
 	Points = glGenLists(1);
 
 	if (shapeConfig->type == 'M') {
+		glNewList(Points, GL_COMPILE);
 		for (auto result : resultsM) {
-			glNewList(Points, GL_COMPILE);
 			for (auto hitPoint : result.getHitPoints()) {
 				DrawPoint(hitPoint, 0, 1, 0);
 			}
 			for (auto missPoint : result.getMissedPoints()) {
 				DrawPoint(missPoint, 1, 0, 0);
 			}
-			glEndList();
 		}
+		glEndList();
 	}
 }
 
@@ -607,14 +612,14 @@ void OnRender() {
 				for (Shape &sssss : outters) {
 					i++;
 					DrawShape(sssss, 1.0, 0.0, 1.0);
-					for (auto &result : resultsM) {
-						if (shapeConfig->shapes[i].getIncludes()) {
-							volume += result.getVolume();
-						}
-						else {
-							volume -= result.getVolume();
-						}
+					auto &result = resultsM[i];
+					if (shapeConfig->shapes[i].getIncludes()) {
+						volume += result.getVolume();
 					}
+					else {
+						volume -= result.getVolume();
+					}
+					
 				}
 				volume = round(volume * 10000.0) / 10000.0;
 
