@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Shape.h"
+#include <set>
 #include <algorithm>
 #include <math.h> 
 
@@ -324,6 +325,11 @@ bool Point2D::operator==(const Point2D & lhs)
 	return lhs.areEqual(lhs, Point2D(x, y));
 }
 
+bool Point2D::operator!=(const Point2D & lhs)
+{
+	return !(Point2D(x, y) == lhs);
+}
+
 //Point2d end
 
 //Point3d
@@ -595,7 +601,7 @@ double Shape::getFieldOfCube() {
 bool Shape::isInside(Point3D _pointToCheck)
 {
 	auto pointOutOfRange = PointOutside;
-
+	
 	auto lineToCheck = Line(pointOutOfRange, Point2D(_pointToCheck.getX(), _pointToCheck.getZ()));
 	auto isIsideBottom = isInside(getBase(), lineToCheck);
 
@@ -605,11 +611,7 @@ bool Shape::isInside(Point3D _pointToCheck)
 	lineToCheck = Line(pointOutOfRange, Point2D(_pointToCheck.getZ(), _pointToCheck.getY()));
 	auto isIsideSide2 = isInside(getSide2(), lineToCheck);
 
-	if (isIsideBottom && isIsideSide1 && isIsideSide2)
-	{
-		return true;
-	}
-	return false;
+	return isIsideBottom && isIsideSide1 && isIsideSide2;
 }
 
 double Shape::getMax_size()
@@ -754,9 +756,17 @@ std::vector<std::vector<Point2D>> Shape::rectangleMethod2d(std::vector<Point2D>&
 	return rectangles;
 }
 
+bool Contains(const std::vector<Point2D> _container, Point2D item) {
+	for (auto e : _container) {
+		if (Point2D::areEqual(e, item)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Shape::isInside(std::vector<Point2D> _shape, Line _lineToCheck)
 {
-	int intersections = 0;
 	std::vector<Point2D> interPoints;
 	IntersectionInfo interInfo = NULL;
 
@@ -771,34 +781,29 @@ bool Shape::isInside(std::vector<Point2D> _shape, Line _lineToCheck)
 		interInfo = currentLine.intersect(_lineToCheck);
 		if (interInfo.intersects)
 		{
-			if (std::find(interPoints.begin(), interPoints.end(), interInfo.intersection) == interPoints.end()) {
-				intersections++;
-				if (interInfo.intersection.x >= 0 && interInfo.intersection.y >= 0) {
-					interPoints.push_back(interInfo.intersection);
-				}
+			if (!Contains(interPoints, interInfo.intersection))
+			{ 
+				interPoints.push_back(interInfo.intersection);
 			}
+
 		}
 	}
 	// check last line from last point to the 1st point
-	auto currentLine = Line(Point2D(_shape.front().getX(), _shape.front().getY()),
-		Point2D(_shape.back().getX(), _shape.back().getY()));
+	auto currentLine = Line(
+							Point2D(_shape.back().getX(), _shape.back().getY()),
+							Point2D(_shape.front().getX(), _shape.front().getY())
+							);
 	interInfo = currentLine.intersect(_lineToCheck);
 	if (interInfo.intersects)
 	{
-		if (std::find(interPoints.begin(), interPoints.end(), interInfo.intersection) == interPoints.end()) {
-			intersections++;
-			if (interInfo.intersection.x >= 0 && interInfo.intersection.y >= 0) {
-				interPoints.push_back(interInfo.intersection);
-			}
+		if (!Contains(interPoints, interInfo.intersection))
+		{
+			interPoints.push_back(interInfo.intersection);
 		}
 	}
 
 	// if we have odd number of intersections then point is inside
-	if (intersections % 2 == 1)
-	{
-		return true;
-	}
-	return false;
+	return interPoints.size() % 2 == 1;
 }
 
 //Shape end
@@ -1029,67 +1034,66 @@ Line::Line(Point2D _start, Point2D _end)
 	end = _end;
 }
 
-// Source: https://github.com/gregsidelnikov/mosaic.js/blob/master/segment.js
+bool lineSegmentIntersection(
+	double Ax, double Ay,
+	double Bx, double By,
+	double Cx, double Cy,
+	double Dx, double Dy,
+	double *X, double *Y) {
+
+	double  distAB, theCos, theSin, newX, ABpos;
+
+	//  Fail if either line segment is zero-length.
+	if (Ax == Bx && Ay == By || Cx == Dx && Cy == Dy) return false;
+
+	//  Fail if the segments share an end-point.
+	if (Ax == Cx && Ay == Cy || Bx == Cx && By == Cy
+		|| Ax == Dx && Ay == Dy || Bx == Dx && By == Dy) {
+		return false;
+	}
+
+	//  (1) Translate the system so that point A is on the origin.
+	Bx -= Ax; By -= Ay;
+	Cx -= Ax; Cy -= Ay;
+	Dx -= Ax; Dy -= Ay;
+
+	//  Discover the length of segment A-B.
+	distAB = sqrt(Bx*Bx + By * By);
+
+	//  (2) Rotate the system so that point B is on the positive X axis.
+	theCos = Bx / distAB;
+	theSin = By / distAB;
+	newX = Cx * theCos + Cy * theSin;
+	Cy = Cy * theCos - Cx * theSin; Cx = newX;
+	newX = Dx * theCos + Dy * theSin;
+	Dy = Dy * theCos - Dx * theSin; Dx = newX;
+
+	//  Fail if segment C-D doesn't cross line A-B.
+	if (Cy<0. && Dy<0. || Cy >= 0. && Dy >= 0.) return false;
+
+	//  (3) Discover the position of the intersection point along line A-B.
+	ABpos = Dx + (Cx - Dx)*Dy / (Dy - Cy);
+
+	//  Fail if segment C-D crosses line A-B outside of segment A-B.
+	if (ABpos<0. || ABpos>distAB) return false;
+
+	//  (4) Apply the discovered position to line A-B in the original coordinate system.
+	*X = Ax + ABpos * theCos;
+	*Y = Ay + ABpos * theSin;
+
+	//  Success.
+	return true;
+}
+
 IntersectionInfo Line::intersect(Line _lineToCheck)
 {
-	// a
-	double x1 = start.getX();
-	double y1 = start.getY();
-	double x2 = end.getX();
-	double y2 = end.getY();
-
-	// b
-	double x3 = _lineToCheck.getStart().getX();
-	double y3 = _lineToCheck.getStart().getY();
-	double x4 = _lineToCheck.getEnd().getX();
-	double y4 = _lineToCheck.getEnd().getY();
-
-	double a1, a2, b1, b2, c1, c2;
-	double r1, r2, r3, r4;
-	double denom, offset, num;
-
-	a1 = y2 - y1;
-	b1 = x1 - x2;
-	c1 = (x2 * y1) - (x1 * y2);
-
-	r3 = ((a1 * x3) + (b1 * y3) + c1);
-	r4 = ((a1 * x4) + (b1 * y4) + c1);
-
-	if ((r3 != 0) && (r4 != 0) && ((r3 * r4) >= 0))
-		return IntersectionInfo(false);
-
-	a2 = y4 - y3; // Compute a2, b2, c2
-	b2 = x3 - x4;
-	c2 = (x4 * y3) - (x3 * y4);
-	r1 = (a2 * x1) + (b2 * y1) + c2; // Compute r1 and r2
-	r2 = (a2 * x2) + (b2 * y2) + c2;
-
-	if ((r1 != 0) && (r2 != 0) && ((r1 * r2) >= 0))
-		return IntersectionInfo(false);
-
-	denom = (a1 * b2) - (a2 * b1); //Line segments intersect: compute intersection point.
-
-	// równoleg³e co z tym ?
-	if (denom == 0)
-		return IntersectionInfo(true);
-
-	if (denom < 0) offset = -denom / 2; else offset = denom / 2;
-
-	int x, y;
-	num = (b1 * c2) - (b2 * c1);
-	if (num < 0)
-		x = (num - offset) / denom;
-	else
-		x = (num + offset) / denom;
-
-	num = (a2 * c1) - (a1 * c2);
-
-	if (num < 0)
-		y = (num - offset) / denom;
-	else
-		y = (num + offset) / denom;
-
-	return IntersectionInfo(Point2D(x, y));
+	double x, y;
+	auto out = lineSegmentIntersection(start.x, start.y, end.x, end.y, 
+		_lineToCheck.start.x, _lineToCheck.start.y, _lineToCheck.end.x, _lineToCheck.end.y, &x,&y);
+	if (out) {
+		return IntersectionInfo(Point2D(x,y));
+	}
+	return IntersectionInfo(false);
 }
 
 Point2D Line::getStart()

@@ -15,6 +15,7 @@ public:
 	double getY();
 	static bool areEqual(Point2D, Point2D);
 	bool operator==(const Point2D& lhs);
+	bool operator!=(const Point2D& lhs);
 };
 
 class Point3D : public Point2D {
