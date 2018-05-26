@@ -2,6 +2,9 @@
 
 #define PI 3.14159265
 #define WHITE color(1,1,1)
+#define RED color(1,0,0)
+#define GREEN color(0,1,0)
+#define BLUE color(0,0,1)
 
 // Deklaracje funkcji u¿ywanych jako obs³uga zdarzeñ GLUT-a.
 void OnRender();

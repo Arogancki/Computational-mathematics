@@ -12,7 +12,6 @@ bool captureMouse = true;
 bool free3DMovement = true;
 double volume = 0.0;
 
-int PointsToShoot = 500;
 int mouseX = 0;
 int mouseY = 0;
 
@@ -32,6 +31,10 @@ bool CHECK_FEATURE_SWITCH = true;
 
 void drawText(float x, float y, std::string st);
 void BetterDraw(float x, float y, std::string message, color color);
+
+void DrawShapes(std::vector<Shape> shapes, double r, double g, double b);
+
+void DrawShapes(std::vector<Shape> shapes, double r, double g, double b, bool negative);
 
 void DrawPoint(Point3D p1, double r, double g, double b) {
 	glPushMatrix();
@@ -116,7 +119,8 @@ int main(int argc, char* argv[])
 	if (!debug)
 		cin >> filePath;
 	else {
-		filePath = "./testFile.txt";
+		filePath = "./figury/piramida.txt";
+		//filePath = "./testFile.txt";
 		//filePath = "./cube.txt";
 	}
 
@@ -185,15 +189,15 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		}
 	}
 
-	if (key == 'i' || key == 'I') {
+	if ((key == 'i' || key == 'I') && !enterPressed) {
 		axisViewSwtich = !axisViewSwtich;
 	}
 
-	if (key == 'o' || key == 'O') {
+	if ((key == 'o' || key == 'O') && !enterPressed) {
 		methodResultsView = !methodResultsView;
 	}
 
-	if (key == 'p' || key == 'P') {
+	if ((key == 'p' || key == 'P') && !enterPressed) {
 		methodResultsExtra = !methodResultsExtra;
 	}
 
@@ -217,23 +221,37 @@ void OnKeyDown(unsigned char key, int x, int y) {
 		if (player.speed > 0.1)
 			player.speed -= 0.1;
 	}
-
+	string mode = "";
 	// Console that allows to write etc. 
-	if (key == ' ') {
+	if (key == 9) {
 		if (consoleComandString != "") {
 			switch (consoleComandString[0])
 			{
-			case 'p':
-			case 'P':
-				PointsToShoot = stoi(consoleComandString.substr(1, consoleComandString.length()));
-				CalculateVolume();
-				break;
-			case 'M':
-			case 'm':
-				//sim.set_m(stod(consoleComandString.substr(1, consoleComandString.length())));
-				break;
-			default:
-				break;
+				case 'M':
+				case 'm':
+					try {
+						mode = consoleComandString.substr(1, consoleComandString.length());
+						shapeConfig->type = mode[0];
+						if (shapeConfig->type >= 97) 
+						{
+							shapeConfig->type -= 32;
+						}
+						CalculateVolume();
+					}
+					catch (...) {
+					}
+					break;
+				case 'V':
+				case 'v':
+					try {
+						shapeConfig->value = stoi(consoleComandString.substr(1, consoleComandString.length()));
+						CalculateVolume();
+					}
+					catch (...){
+					}
+					break;
+				default:
+					break;
 			}
 			consoleComandString.erase();
 		}
@@ -244,13 +262,13 @@ void OnKeyDown(unsigned char key, int x, int y) {
 	if (enterPressed && key == 8) {
 		consoleComandString = consoleComandString.substr(0, consoleComandString.length() - 1);
 	}
-
+	
 	//dodawanie znakow
-	if (enterPressed && key != 13 && key != 8 && key != ' ') {
+	if (enterPressed && key != 13 && key != 8 && key != ' ' && key != '\t') {
 		consoleComandString += key;
 	}
 
-	if (key == 'm' || key == 'M') {
+	if ((key == 'm' || key == 'M') && !enterPressed) {
 		if (captureMouse) {
 			captureMouse = false;
 			glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
@@ -313,14 +331,14 @@ void CalculateVolume() {
 	resultsM.clear();
 	if (shapeConfig->type == 'M') {
 		for (Shape &ssssssssss : shapeConfig->shapes) {
-			monteCarloMethodResults mcmr = ssssssssss.monteCarloMethod(PointsToShoot);
+			monteCarloMethodResults mcmr = ssssssssss.monteCarloMethod(shapeConfig->value);
 			resultsM.push_back(mcmr);
 		}
 	}
 
-	Points = glGenLists(1);
 
 	if (shapeConfig->type == 'M') {
+		Points = glGenLists(1);
 		glNewList(Points, GL_COMPILE);
 		for (auto result : resultsM) {
 			for (auto hitPoint : result.getHitPoints()) {
@@ -329,6 +347,18 @@ void CalculateVolume() {
 			for (auto missPoint : result.getMissedPoints()) {
 				DrawPoint(missPoint, 1, 0, 0);
 			}
+		}
+		glEndList();
+	}
+	if (shapeConfig->type == 'R') {
+		Squares = glGenLists(1);
+		glNewList(Squares, GL_COMPILE);
+		for (rectangleMethodResults &rrrr : resultsR) {
+			double negative = !rrrr.getIncludes();
+			if (methodResultsExtra) {
+				DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2, negative);
+			}
+			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5, negative);
 		}
 		glEndList();
 	}
@@ -409,14 +439,11 @@ void OnTimer(int id) {
 
 }
 
-void DrawGUI()
-{
-	std::stringstream s;
-
-#pragma region Credentials
+void DrawCredentials() {
 	int x = 23;
 	int y = -45;
-	s << "Krzysztof Ko³odziejczak";
+	std::stringstream s;
+	s << "Krzysztof Kolodziejczak";
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 	s << "Artur Ziemba";
@@ -427,26 +454,43 @@ void DrawGUI()
 	y -= 7;
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
+}
 
-	x = -64;
-	y = 50;
-	s << "Commands";
+void DrawGUI()
+{
+	std::stringstream s;
+
+	DrawCredentials();
+
+	int x = -63;
+	int y = 58;
+	s << "Tab key - open/close console";
+	BetterDraw(x, y, s.str(), RED);
+	s.str("");
+	y -= 7;
+	s << "Available commands";
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 	y -= 7;
-	s << "p[number] - number of points";
+	s << "v[number] - number of points/rectangles";
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+	y -= 7;
+	s << "m[m/r] - method";
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 
-
-#pragma endregion
 	x = 6;
 	y = 58;
+	s << "Method: " << (shapeConfig->type == 'M'? "Monte carlo" : "Rectangles");
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+	y -= 7;
 	s << "Volume: " << volume;
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 	y -= 7;
-	s << "Points: " << PointsToShoot;
+	s << (shapeConfig->type == 'M' ? "Points: " : "Rectangles: ") << shapeConfig->value;
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 #pragma region Console
@@ -595,7 +639,8 @@ void OnRender() {
 			DrawShape(shapeConfig->shapes[prezentacjaFigurNaStarcieIndex], 1.0, 0.0, 1.0);
 		}
 		BetterDraw(-64, 58, info, WHITE);
-
+		BetterDraw(-20, -30, "Press Enter, to continue...", WHITE);
+		DrawCredentials();
 	}
 	else {
 
@@ -628,15 +673,7 @@ void OnRender() {
 
 			// dla methody kwadratow rysowanie
 			if (shapeConfig->type == 'R') {
-				double volume = 0.0;
-				int i = -1;
 				for (rectangleMethodResults &rrrr : resultsR) {
-					double negative = !rrrr.getIncludes();
-					if (methodResultsExtra) {
-						DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2, negative);
-					}
-					i++;
-					DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5, negative);
 					if (rrrr.getIncludes()) {
 						volume += rrrr.getVolume();
 					}
@@ -644,11 +681,9 @@ void OnRender() {
 						volume -= rrrr.getVolume();
 					}
 				}
-				std::ostringstream s;
-				s << "Rectangle method volume = " << round(volume * 10000.0) / 10000.0;
-				int x = -64;
-				int y = 58;
-				BetterDraw(x, y, s.str(), WHITE);
+				glCallList(Squares);
+
+				volume = round(volume * 10000.0) / 10000.0;
 			}
 		}
 
