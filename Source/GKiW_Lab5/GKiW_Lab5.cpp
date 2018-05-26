@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 #pragma region OpenGL stuff
 
 	glutInit(&argc, argv);
-
+	srand(time(NULL));
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 360);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -119,9 +119,10 @@ int main(int argc, char* argv[])
 	if (!debug)
 		cin >> filePath;
 	else {
+		//filePath = "./figury/szescian.txt";
 		//filePath = "./figury/piramida.txt";
+		//filePath = "./figury/2szescian.txt";
 		filePath = "./testFile.txt";
-		//filePath = "./cube.txt";
 	}
 
 	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
@@ -320,11 +321,21 @@ void RegenerateViews() {
 		Points = glGenLists(1);
 		glNewList(Points, GL_COMPILE);
 		for (auto result : resultsM) {
-			for (auto hitPoint : result.getHitPoints()) {
-				DrawPoint(hitPoint, 0, 1, 0);
+			if (result.getInclude()) {
+				for (auto hitPoint : result.getHitPoints()) {
+					DrawPoint(hitPoint, 0, 1, 0);
+				}
+				for (auto missPoint : result.getMissedPoints()) {
+					DrawPoint(missPoint, 1, 0, 0);
+				}
 			}
-			for (auto missPoint : result.getMissedPoints()) {
-				DrawPoint(missPoint, 1, 0, 0);
+			else {
+				for (auto hitPoint : result.getHitPoints()) {
+					DrawPoint(hitPoint, 1, 0, 0);
+				}
+				for (auto missPoint : result.getMissedPoints()) {
+					DrawPoint(missPoint, 0, 1, 0);
+				}
 			}
 		}
 		glEndList();
