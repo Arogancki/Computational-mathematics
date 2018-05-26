@@ -32,8 +32,8 @@ bool CHECK_FEATURE_SWITCH = true;
 void drawText(float x, float y, std::string st);
 void BetterDraw(float x, float y, std::string message, color color);
 
+void RegenerateViews();
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b);
-
 void DrawShapes(std::vector<Shape> shapes, double r, double g, double b, bool negative);
 
 void DrawPoint(Point3D p1, double r, double g, double b) {
@@ -47,7 +47,7 @@ void DrawPoint(Point3D p1, double r, double g, double b) {
 	glMaterialfv(GL_FRONT, GL_SPECULAR, m_spe);
 
 	glTranslatef(p1.getX(), p1.getY(), p1.getZ());
-	glutSolidCube(0.01);
+	glutSolidCube(0.05);
 	glPopMatrix();
 }
 
@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
 	if (!debug)
 		cin >> filePath;
 	else {
-		filePath = "./figury/piramida.txt";
-		//filePath = "./testFile.txt";
+		//filePath = "./figury/piramida.txt";
+		filePath = "./testFile.txt";
 		//filePath = "./cube.txt";
 	}
 
@@ -195,10 +195,12 @@ void OnKeyDown(unsigned char key, int x, int y) {
 
 	if ((key == 'o' || key == 'O') && !enterPressed) {
 		methodResultsView = !methodResultsView;
+		RegenerateViews();
 	}
 
 	if ((key == 'p' || key == 'P') && !enterPressed) {
 		methodResultsExtra = !methodResultsExtra;
+		RegenerateViews();
 	}
 
 	if (key == 'x' || key == 'X') {
@@ -313,6 +315,36 @@ void MouseButton(int button, int state, int x, int y)
 
 #pragma endregion
 
+void RegenerateViews() {
+	if (shapeConfig->type == 'M' && methodResultsView) {
+		Points = glGenLists(1);
+		glNewList(Points, GL_COMPILE);
+		for (auto result : resultsM) {
+			for (auto hitPoint : result.getHitPoints()) {
+				DrawPoint(hitPoint, 0, 1, 0);
+			}
+			for (auto missPoint : result.getMissedPoints()) {
+				DrawPoint(missPoint, 1, 0, 0);
+			}
+		}
+		glEndList();
+	}
+	if (shapeConfig->type == 'R') {
+		Squares = glGenLists(1);
+		glNewList(Squares, GL_COMPILE);
+		for (rectangleMethodResults &rrrr : resultsR) {
+			double negative = !rrrr.getIncludes();
+			if (methodResultsExtra) {
+				DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2, negative);
+			}
+			if (methodResultsView) {
+				DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5, negative);
+			}
+		}
+		glEndList();
+	}
+}
+
 void CalculateVolume() {
 
 	outters.clear();
@@ -336,33 +368,10 @@ void CalculateVolume() {
 		}
 	}
 
-
-	if (shapeConfig->type == 'M') {
-		Points = glGenLists(1);
-		glNewList(Points, GL_COMPILE);
-		for (auto result : resultsM) {
-			for (auto hitPoint : result.getHitPoints()) {
-				DrawPoint(hitPoint, 0, 1, 0);
-			}
-			for (auto missPoint : result.getMissedPoints()) {
-				DrawPoint(missPoint, 1, 0, 0);
-			}
-		}
-		glEndList();
-	}
-	if (shapeConfig->type == 'R') {
-		Squares = glGenLists(1);
-		glNewList(Squares, GL_COMPILE);
-		for (rectangleMethodResults &rrrr : resultsR) {
-			double negative = !rrrr.getIncludes();
-			if (methodResultsExtra) {
-				DrawShapes(rrrr.getProjectins(), 0.7, 0.2, 0.2, negative);
-			}
-			DrawShapes(rrrr.getRectangles(), 0.5, 1.0, 0.5, negative);
-		}
-		glEndList();
-	}
+	RegenerateViews();
 }
+
+
 
 void OnTimer(int id) {
 
@@ -651,49 +660,38 @@ void OnRender() {
 		int i = -1;
 		volume = 0;
 		// figura opatulujaca
-		if (methodResultsView) {
-			if (shapeConfig->type == 'M') {
-				i = -1;
-				for (Shape &sssss : outters) {
-					i++;
-					DrawShape(sssss, 1.0, 0.0, 1.0);
-					auto &result = resultsM[i];
-					if (shapeConfig->shapes[i].getIncludes()) {
-						volume += result.getVolume();
-					}
-					else {
-						volume -= result.getVolume();
-					}
-					
+		if (shapeConfig->type == 'M') {
+			i = -1;
+			for (Shape &sssss : outters) {
+				i++;
+				DrawShape(sssss, 1.0, 0.0, 1.0);
+				auto &result = resultsM[i];
+				if (shapeConfig->shapes[i].getIncludes()) {
+					volume += result.getVolume();
 				}
-				volume = round(volume * 10000.0) / 10000.0;
+				else {
+					volume -= result.getVolume();
+				}
+					
+			}
+			volume = round(volume * 10000.0) / 10000.0;
 
 				glCallList(Points);
-			}
-
-			// dla methody kwadratow rysowanie
-			if (shapeConfig->type == 'R') {
-				for (rectangleMethodResults &rrrr : resultsR) {
-					if (rrrr.getIncludes()) {
-						volume += rrrr.getVolume();
-					}
-					else {
-						volume -= rrrr.getVolume();
-					}
-				}
-				glCallList(Squares);
-
-				volume = round(volume * 10000.0) / 10000.0;
-			}
+			
 		}
 
-		for (auto point : points) {
-			if (shapeConfig->shapes.front().isInside(point)) {
-				DrawPoint(point, 0, 1, 0);
+		// dla methody kwadratow rysowanie
+		if (shapeConfig->type == 'R') {
+			for (rectangleMethodResults &rrrr : resultsR) {
+				if (rrrr.getIncludes()) {
+					volume += rrrr.getVolume();
+				}
+				else {
+					volume -= rrrr.getVolume();
+				}
 			}
-			else {
-				DrawPoint(point, 1, 0, 0);
-			}
+			glCallList(Squares);
+			volume = round(volume * 10000.0) / 10000.0;
 		}
 
 		DrawGUI();
@@ -702,6 +700,7 @@ void OnRender() {
 
 	glutSwapBuffers();
 	glFlush();
+	glClearColor(1, 1, 1, 1.0f);
 	glutPostRedisplay();
 
 }
@@ -743,7 +742,7 @@ void BetterDraw(float x, float y, std::string message, color color) {
 	drawText(x, y, message);
 
 	// Shadow Color 0 0 0 -> Black
-	glColor3f(0, 0, 0);
+	glColor3f(1, 1, 1);
 	drawText(x - 0.25f, y, message);
 	drawText(x + 0.25f, y, message);
 	drawText(x, y - 0.5f, message);
