@@ -1,0 +1,22 @@
+• Aplikacja nazywa się 'Calki.exe'.
+• Po uruchomieniu w konsoli poleceń należy podać ścieżkę do pliku zawierającego model, który chcemy wczytać.
+• Po wczytaniu modelu może wystąpić zablokowanie myszki, można temu zapobiec na 2 sposoby:
+    a) użycie skrótu 'Alt' + 'Tab' do zmiany aktywnego okna na grę,
+    b) naciśnięcie klawisza 'm' spowoduje to oderwanie kursora myszy od gry.
+        aby mieć możliwość "latania" w grze należy powtórnie nacisnąć klawisz 'm'.
+• Klawisze I, O, P — pozwalają na usunięcie lub też pokazanie dodatkowych szczegółów podczas rysowania modeli.
+• Aplikacja posiada konsolę poleceń, pozwalającą zmieniać ilość strzałów oraz metodę obliczania.
+    W celu uruchomienia konsoli należy nacisnąć klawisz 'Tab' — w przypadku włączenia konsoli 
+    w lewym dolnym rogu aplikacji powinna pojawić się strzałka '->' i tekst, który piszemy na klawiaturze.
+    
+    Konsola posiada dwe komendy:
+        v[number] - pozwala na zmianę ilości punktów i prostokątów, która będzie rysowana,
+            np. 
+                v500 - ustawi ilość strzałów na 500 w przypadku metody MC i 500 prostokątów w przypadku MR
+        m[m/r] - pozwala na zmianę metody obliczania objętości 
+            np.
+                mm — Monte Carlo, 
+                mr — metoda kwadratów,
+
+    Polecenia zatwierdza się klawiszem 'Tab'.
+

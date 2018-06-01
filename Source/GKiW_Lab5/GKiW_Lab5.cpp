@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FileParser.h"
 
-#define debug true
+#define debug false
 
 #pragma region Zmienne globalne
 SCameraState player;
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 			//filePath = "./figury/szescian.txt";
 			//filePath = "./figury/piramida.txt";
 			//filePath = "./figury/2szescian.txt";
-			filePath = "./testFile.txt";
+			filePath = "./figure.txt";
 		}
 
 		ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
