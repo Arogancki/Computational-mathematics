@@ -112,50 +112,52 @@ int main(int argc, char* argv[])
 
 #pragma endregion
 
-	//try {
-	// load file
-	string filePath;
-	cout << "Please enter path to file with shape specification:\n";
-	if (!debug)
-		cin >> filePath;
-	else {
-		//filePath = "./figury/szescian.txt";
-		//filePath = "./figury/piramida.txt";
-		//filePath = "./figury/2szescian.txt";
-		filePath = "./testFile.txt";
-	}
-
-	ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
-	shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
-
-
-
-	CalculateVolume();
-
-	if (debug) {
-		int i = 0;
-		for (Shape shape : shapeConfig->shapes) {
-			cout << "\nShape: " << ++i << " = " << shape.getPoints().size() - 1 << " lines.\nPoints:" << "\n";
-			int j = 0;
-			for (Point3D point3D : shape.getPoints())
-				cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
+	try {
+		// load file
+		string filePath;
+		cout << "Please enter path to file with shape specification:\n";
+		if (!debug)
+			cin >> filePath;
+		else {
+			//filePath = "./figury/szescian.txt";
+			//filePath = "./figury/piramida.txt";
+			//filePath = "./figury/2szescian.txt";
+			filePath = "./testFile.txt";
 		}
+
+		ParsedData sc = FileParser::parse(filePath); // tej funkcji (pacz linia nizej)
+		shapeConfig = &sc; // nie wiem czemu ale odrazu z funkcji nie dzialalo (shapes.size() bylo rowne 0)
+
+		CalculateVolume();
+
+		if (debug) {
+			int i = 0;
+			for (Shape shape : shapeConfig->shapes) {
+				cout << "\nShape: " << ++i << " = " << shape.getPoints().size() - 1 << " lines.\nPoints:" << "\n";
+				int j = 0;
+				for (Point3D point3D : shape.getPoints())
+					cout << "point: " << ++j << " = " << point3D.getX() << "x" << point3D.getY() << "x" << point3D.getZ() << "\n";
+			}
+		}
+
+		glutMainLoop();
+
+		glDeleteLists(Points, 1);
+		glDeleteLists(Squares, 1);
+
+		return 0;
 	}
+	catch (const std::exception exceptional_result) 
+	{
+		glDeleteLists(Points, 1);
+		glDeleteLists(Squares, 1);
 
-	glutMainLoop();
-
-	glDeleteLists(Points, 1);
-	glDeleteLists(Squares, 1);
-
-	return 0;
-	/*
-	}catch (const std::exception exceptional_result) {
-	std::cout << exceptional_result.what() << '\n';
-	string x;
-	cin >> x;
-	return -1;
+		std::cout << exceptional_result.what() << '\n';
+		string x;
+		cin >> x;
+		return -1;
 	}
-	*/
+	
 }
 
 #pragma region Obsluga wejscia
@@ -483,7 +485,7 @@ void DrawGUI()
 	DrawCredentials();
 
 	int x = -63;
-	int y = 58;
+	int y = 58;	
 	s << "Tab key - open/close console";
 	BetterDraw(x, y, s.str(), RED);
 	s.str("");
@@ -497,6 +499,19 @@ void DrawGUI()
 	s.str("");
 	y -= 7;
 	s << "m[m/r] - method";
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+
+	y -= 75;
+	s << "Examples:";
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+	y -= 7;
+	s << "mm - set method to Monte carlo.";
+	BetterDraw(x, y, s.str(), WHITE);
+	s.str("");
+	y -= 7;
+	s << "v500 - set number of points/rectangles to 500.";
 	BetterDraw(x, y, s.str(), WHITE);
 	s.str("");
 
@@ -610,7 +625,7 @@ void showAxis() {
 	}
 	
 }
-
+int i = -1;
 void OnRender() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -668,7 +683,7 @@ void OnRender() {
 		// glowna figura
 		DrawShapes(shapeConfig->shapes, 0.0, 0.0, 1.0);
 
-		int i = -1;
+		
 		volume = 0;
 		// figura opatulujaca
 		if (shapeConfig->type == 'M') {
